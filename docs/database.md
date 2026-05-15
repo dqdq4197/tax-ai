@@ -7,16 +7,16 @@ ORM: Drizzle ORM / DB: PostgreSQL (Neon) / Extension: pgvector
 
 | 테이블 | 역할 |
 |---|---|
-| `sessions` | 상담 세션 관리 |
+| `conversations` | 상담 대화 관리 |
 | `messages` | 대화 이력 및 tool 호출 기록 |
 | `law_chunks` | 세법 문서 벡터 (RAG) |
 
 ---
 
-## sessions
+## conversations
 
 ```typescript
-export const sessions = pgTable('sessions', {
+export const conversations = pgTable('conversations', {
   id:        uuid('id').primaryKey().defaultRandom(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -31,12 +31,12 @@ export const sessions = pgTable('sessions', {
 
 ```typescript
 export const messages = pgTable('messages', {
-  id:        uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').notNull().references(() => sessions.id),
-  role:      text('role').$type<'user' | 'assistant'>().notNull(),
-  content:   text('content').notNull(),    // AES-256-GCM 암호화된 텍스트
-  toolCalls: jsonb('tool_calls'),          // assistant 메시지의 tool 호출 이력
-  createdAt: timestamp('created_at').notNull().defaultNow(),
+  id:             uuid('id').primaryKey().defaultRandom(),
+  conversationId: uuid('conversation_id').notNull().references(() => conversations.id),
+  role:           text('role').$type<'user' | 'assistant'>().notNull(),
+  content:        text('content').notNull(),    // AES-256-GCM 암호화된 텍스트
+  toolCalls:      jsonb('tool_calls'),          // assistant 메시지의 tool 호출 이력
+  createdAt:      timestamp('created_at').notNull().defaultNow(),
 })
 ```
 
@@ -81,35 +81,17 @@ export const lawChunks = pgTable('law_chunks', {
                incomeTypes: string[] // ["business", "freelance"] | [] = 공통 조항
              }>().notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-})
-
-export const embeddingIndex = index('law_chunks_embedding_idx')
-  .on(lawChunks.embedding)
-  .using('hnsw')
-  .with({ m: 16, ef_construction: 64 })
-```
-
-### 검색 쿼리
-
-```typescript
-// src/db/queries/law-chunks.ts
-export async function searchLawChunks(embedding: number[], limit = 5) {
-  return db
-    .select({
-      content:    lawChunks.content,
-      metadata:   lawChunks.metadata,
-      similarity: sql<number>`1 - (${lawChunks.embedding} <=> ${embedding}::vector)`,
-    })
-    .from(lawChunks)
-    .where(sql`1 - (${lawChunks.embedding} <=> ${embedding}::vector) > 0.7`)
-    .orderBy(sql`${lawChunks.embedding} <=> ${embedding}::vector`)
-    .limit(limit)
-}
+},
+(table) => [
+  index('law_chunks_embedding_idx')
+    .using('hnsw', table.embedding.op('vector_cosine_ops'))
+    .with({ m: 16, ef_construction: 64 }),
+])
 ```
 
 ---
 
 ## 마이그레이션
 
-스키마 변경 순서: `schema.ts` 수정 → `pnpm db:generate` → `pnpm db:migrate`  
+스키마 변경 순서: 도메인 디렉토리의 `schema.ts` 수정 → `pnpm db:generate` → `pnpm db:migrate`  
 `migrations/` 파일 수동 수정 금지.

@@ -45,14 +45,14 @@ pnpm db:seed      # 세법 데이터 pgvector에 삽입
 ```
 src/
 ├── app/
-│   ├── page.tsx                    # 세션 목록 (홈)
+│   ├── page.tsx                    # 대화 목록 (홈)
 │   ├── chat/
-│   │   └── [sessionId]/page.tsx   # 채팅 UI
+│   │   └── [conversationId]/page.tsx   # 채팅 UI
 │   └── api/
 │       ├── chat/route.ts           # streamText + tools (핵심 엔드포인트)
-│       └── sessions/
+│       └── conversations/
 │           └── [id]/
-│               └── messages/route.ts  # 세션 메시지 이력 조회
+│               └── messages/route.ts  # 대화 메시지 이력 조회
 ├── agent/
 │   ├── tools.ts              # vector_search, tax_calculator tool 정의
 │   ├── verify.ts             # 계산 결과 결정적 검증 (tax_calculator 내부에서 호출)
@@ -62,12 +62,16 @@ src/
 │       └── business.ts       # 사업/프리랜서 세액 계산 (현재 유일한 구현체)
 │       # 확장 시: employment.ts, financial.ts 추가 후 index.ts에 등록
 ├── db/
-│   ├── schema.ts
-│   ├── index.ts
-│   └── queries/
-│       ├── sessions.ts
-│       ├── messages.ts
-│       └── law-chunks.ts
+│   ├── conversations/
+│   │   ├── schema.ts
+│   │   └── queries.ts
+│   ├── messages/
+│   │   ├── schema.ts
+│   │   └── queries.ts
+│   ├── law-chunks/
+│   │   ├── schema.ts
+│   │   └── queries.ts
+│   └── index.ts
 ├── lib/
 │   ├── langfuse.ts
 │   ├── encryption.ts         # AES-256-GCM 암호화/복호화
@@ -76,15 +80,15 @@ src/
     └── index.ts
 ```
 
-## 세션 흐름
+## 대화 흐름
 
 ```
-/               세션 목록 (이전 대화 이어보기)
+/               대화 목록 (이전 대화 이어보기)
   │
-  ├── 새 상담    /chat 접속 → 첫 메시지 전송 시 세션 자동 생성
-  │              응답과 함께 sessionId 반환 → URL을 /chat/[sessionId]로 교체
+  ├── 새 상담    /chat 접속 → 첫 메시지 전송 시 conversation 자동 생성
+  │              응답과 함께 conversationId 반환 → URL을 /chat/[conversationId]로 교체
   │
-  └── 이어보기   /chat/[sessionId] 접속 → GET /api/sessions/[id]/messages
+  └── 이어보기   /chat/[conversationId] 접속 → GET /api/conversations/[id]/messages
                   → useChat initialMessages로 이전 대화 복원
 ```
 
