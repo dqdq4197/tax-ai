@@ -24,6 +24,7 @@ export const messages = pgTable(
     inputTokens: integer("input_tokens"),
     outputTokens: integer("output_tokens"),
     finishReason: text("finish_reason"),
+    traceId: text("trace_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("idx_messages_conversation_id").on(t.conversationId)],

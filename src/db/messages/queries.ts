@@ -12,6 +12,7 @@ interface SaveMessageParams {
   inputTokens?: number;
   outputTokens?: number;
   finishReason?: string;
+  traceId?: string;
 }
 
 export async function saveMessage(params: SaveMessageParams) {
@@ -27,6 +28,7 @@ export async function saveMessage(params: SaveMessageParams) {
       inputTokens: params.inputTokens ?? null,
       outputTokens: params.outputTokens ?? null,
       finishReason: params.finishReason ?? null,
+      traceId: params.traceId ?? null,
     })
     .returning();
   return message;

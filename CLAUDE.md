@@ -72,10 +72,13 @@ src/
 │   │   ├── schema.ts
 │   │   └── queries.ts
 │   └── index.ts
-├── lib/
-│   ├── langfuse.ts
-│   ├── encryption.ts         # AES-256-GCM 암호화/복호화
-│   └── voyage.ts
+├── utils/
+│   ├── encryption/
+│   │   └── index.ts          # AES-256-GCM 암호화/복호화
+│   ├── voyage/
+│   │   └── index.ts          # Voyage AI 임베딩 클라이언트
+│   └── langfuse/
+│       └── index.ts          # Langfuse 옵저버빌리티 클라이언트
 └── types/
     └── index.ts
 ```
