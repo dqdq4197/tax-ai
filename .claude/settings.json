@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm tsc --noEmit)",
+      "Bash(pnpm type-check)",
+      "Bash(pnpm vitest *)",
+      "Bash(pnpm db:studio)"
+    ]
+  }
+}
