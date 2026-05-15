@@ -44,7 +44,7 @@ pnpm db:seed      # 세법 데이터 pgvector에 삽입
 
 ```
 src/
-├── app/
+├── app/                            # Next.js 라우팅 레이어 (클라이언트 + API routes)
 │   ├── page.tsx                    # 대화 목록 (홈)
 │   ├── chat/
 │   │   └── [conversationId]/page.tsx   # 채팅 UI
@@ -53,34 +53,34 @@ src/
 │       └── conversations/
 │           └── [id]/
 │               └── messages/route.ts  # 대화 메시지 이력 조회
-├── agent/
-│   ├── tools.ts              # vector_search, tax_calculator tool 정의
-│   ├── verify.ts             # 계산 결과 결정적 검증 (tax_calculator 내부에서 호출)
-│   ├── prompts.ts            # 시스템 프롬프트
-│   └── calculators/
-│       ├── index.ts          # 소득 유형 → 계산기 라우팅 (전략 패턴)
-│       └── business.ts       # 사업/프리랜서 세액 계산 (현재 유일한 구현체)
-│       # 확장 시: employment.ts, financial.ts 추가 후 index.ts에 등록
-├── db/
-│   ├── conversations/
-│   │   ├── schema.ts
-│   │   └── queries.ts
-│   ├── messages/
-│   │   ├── schema.ts
-│   │   └── queries.ts
-│   ├── law-chunks/
-│   │   ├── schema.ts
-│   │   └── queries.ts
-│   └── index.ts
-├── utils/
-│   ├── encryption/
-│   │   └── index.ts          # AES-256-GCM 암호화/복호화
-│   ├── voyage/
-│   │   └── index.ts          # Voyage AI 임베딩 클라이언트
-│   └── langfuse/
-│       └── index.ts          # Langfuse 옵저버빌리티 클라이언트
-└── types/
-    └── index.ts
+└── server/                         # 서버 전용 코드 (클라이언트에서 import 불가)
+    ├── agent/
+    │   ├── types.ts              # TaxInput, TaxResult, IncomeType 등 agent 전용 타입
+    │   ├── tools.ts              # vector_search, tax_calculator tool 정의
+    │   ├── verify.ts             # 계산 결과 결정적 검증 (tax_calculator 내부에서 호출)
+    │   ├── prompts.ts            # 시스템 프롬프트
+    │   └── calculators/
+    │       ├── index.ts          # 소득 유형 → 계산기 라우팅 (전략 패턴)
+    │       └── business.ts       # 사업/프리랜서 세액 계산 (현재 유일한 구현체)
+    │       # 확장 시: employment.ts, financial.ts 추가 후 index.ts에 등록
+    ├── db/
+    │   ├── conversations/
+    │   │   ├── schema.ts
+    │   │   └── queries.ts
+    │   ├── messages/
+    │   │   ├── schema.ts
+    │   │   └── queries.ts
+    │   ├── law-chunks/
+    │   │   ├── schema.ts
+    │   │   └── queries.ts
+    │   └── index.ts
+    └── utils/
+        ├── encryption/
+        │   └── aes256gcm.ts      # AES-256-GCM 암호화/복호화
+        ├── voyage/
+        │   └── index.ts          # Voyage AI 임베딩 클라이언트
+        └── langfuse/
+            └── index.ts          # Langfuse 옵저버빌리티 클라이언트
 ```
 
 ## 대화 흐름
