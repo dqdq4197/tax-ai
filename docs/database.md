@@ -34,14 +34,15 @@ export const messages = pgTable('messages', {
   id:        uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id').notNull().references(() => sessions.id),
   role:      text('role').$type<'user' | 'assistant'>().notNull(),
-  content:   text('content').notNull(),    // SEED 암호화된 텍스트
+  content:   text('content').notNull(),    // AES-256-GCM 암호화된 텍스트
   toolCalls: jsonb('tool_calls'),          // assistant 메시지의 tool 호출 이력
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 ```
 
 **암호화 규칙**:
-- `content`는 저장 시 항상 SEED 암호화. 조회 시 복호화 후 반환.
+- `content`는 저장 시 항상 AES-256-GCM 암호화. 조회 시 복호화 후 반환.
+- Node.js 내장 `crypto` 모듈 사용 (외부 패키지 불필요).
 - user/assistant 구분 없이 모든 메시지에 적용.
 
 **toolCalls 구조** (assistant 메시지에만 존재):

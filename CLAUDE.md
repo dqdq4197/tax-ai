@@ -11,7 +11,7 @@
 - **LLM은 계산하지 않는다**: 세액 계산은 항상 서버의 결정적 함수(`tax_calculator`)를 tool로 호출한다.
 - **검증은 tool 내부에서**: `tax_calculator.execute`에서 `verifyResult()`를 호출하고, 실패 시 오류를 반환해 LLM이 `maxSteps` 내에서 재시도한다.
 - **모든 메시지는 기록된다**: user/assistant 메시지와 tool 호출 이력을 `messages` 테이블에 저장한다.
-- **모든 메시지는 암호화된다**: content는 SEED 알고리즘으로 암호화 저장, 조회 시 복호화.
+- **모든 메시지는 암호화된다**: content는 AES-256-GCM으로 암호화 저장, 조회 시 복호화.
 
 ## 기술 스택
 
@@ -26,7 +26,7 @@
 | ORM | Drizzle ORM |
 | DB | PostgreSQL + pgvector (Neon) |
 | LLMOps | Langfuse |
-| 암호화 | crypto-js (SEED) |
+| 암호화 | Node.js crypto (AES-256-GCM) |
 | 배포 | Vercel + Neon |
 
 ## 주요 명령어
@@ -70,7 +70,7 @@ src/
 │       └── law-chunks.ts
 ├── lib/
 │   ├── langfuse.ts
-│   ├── encryption.ts         # SEED 암호화/복호화
+│   ├── encryption.ts         # AES-256-GCM 암호화/복호화
 │   └── voyage.ts
 └── types/
     └── index.ts
@@ -104,7 +104,7 @@ VOYAGE_API_KEY=
 LANGFUSE_SECRET_KEY=
 LANGFUSE_PUBLIC_KEY=
 LANGFUSE_HOST=
-SEED_ENCRYPTION_KEY=
+ENCRYPTION_KEY=
 ```
 
 ## 참고 문서
