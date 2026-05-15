@@ -15,19 +15,19 @@
 
 ## 기술 스택
 
-| 역할 | 기술 |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS |
-| AI SDK | Vercel AI SDK (`useChat` + `streamText`) |
-| LLM | Anthropic Claude (claude-sonnet-4-5) |
-| Embedding | Voyage AI (voyage-3) |
-| ORM | Drizzle ORM |
-| DB | PostgreSQL + pgvector (Neon) |
-| LLMOps | Langfuse |
-| 암호화 | Node.js crypto (AES-256-GCM) |
-| 배포 | Vercel + Neon |
+| 역할       | 기술                                     |
+| ---------- | ---------------------------------------- |
+| Framework  | Next.js 15 (App Router)                  |
+| Language   | TypeScript                               |
+| Styling    | Tailwind CSS                             |
+| AI SDK     | Vercel AI SDK (`useChat` + `streamText`) |
+| LLM        | Anthropic Claude (claude-sonnet-4-5)     |
+| Embedding  | Voyage AI (voyage-3)                     |
+| ORM        | Drizzle ORM                              |
+| DB         | PostgreSQL + pgvector (Neon)             |
+| LLMOps     | Langfuse                                 |
+| Encryption | Node.js crypto (AES-256-GCM)             |
+| Deploy     | Vercel + Neon                            |
 
 ## 주요 명령어
 
@@ -110,7 +110,7 @@ ANTHROPIC_API_KEY=
 VOYAGE_API_KEY=
 LANGFUSE_SECRET_KEY=
 LANGFUSE_PUBLIC_KEY=
-LANGFUSE_HOST=
+LANGFUSE_BASE_URL=
 ENCRYPTION_KEY=
 ```
 
