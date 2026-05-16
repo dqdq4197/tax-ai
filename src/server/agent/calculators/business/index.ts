@@ -2,16 +2,12 @@ import { getExpenseRate } from "./expense-rates";
 import { getThresholds } from "./thresholds";
 import { getTaxBrackets } from "./tax-brackets";
 import type { ExpenseMethod, TaxInput, TaxResult } from "./types";
-
-// 소득세법 제50조, 기본공제 금액
-const BASIC_DEDUCTION_AMOUNT = 1_500_000;
-
-// 지방세법 제92조, 지방소득세는 보통 산출된 소득세의 10%
-const LOCAL_INCOME_TAX_RATE = 0.1;
-
-// 소득세법 시행령 제143조제3항, 소득세법 시행규칙 제68조 — 간편장부대상자 비교과세 배율
-// "기준경비율 소득금액 >= 단순경비율 소득금액 × 2.8 이면 단순경비율 소득금액 × 2.8로 할 수 있다"
-const STANDARD_CAP_MULTIPLIER = 2.8;
+import {
+  BASIC_DEDUCTION_AMOUNT,
+  LOCAL_INCOME_TAX_RATE,
+  STANDARD_CAP_MULTIPLIER,
+  STANDARD_TAX_CREDIT,
+} from "./constants";
 
 /**
  * 총칙 "나. 단순경비율에 의한 소득금액 계산방법"
@@ -130,7 +126,7 @@ function calcTaxCredits(): number {
    * 의료비·교육비(②③항)는 "근로소득이 있는 거주자"만 적용 — 사업소득자 해당 없음
    * 기부금(④항)은 "사업소득만 있는 자는 제외" — 사업소득자 원칙적 해당 없음
    */
-  return 70_000;
+  return STANDARD_TAX_CREDIT;
 }
 
 function applyTaxBracket(taxableIncome: number, taxYear: number) {
