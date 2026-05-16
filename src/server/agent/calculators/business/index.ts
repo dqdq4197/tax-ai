@@ -118,22 +118,19 @@ function resolveBusinessIncome(input: TaxInput): {
 // 소득세법 제50조 기본공제: 본인 + 부양가족 1인당 150만원
 function calcIncomeDeductions(input: TaxInput): number {
   const basic = (1 + input.dependents) * BASIC_DEDUCTION_AMOUNT;
-  const { nationalPension = 0, healthInsurance = 0 } = input.incomeDeductions;
-  return basic + nationalPension + healthInsurance;
+  const { nationalPension = 0 } = input.incomeDeductions;
+  return basic + nationalPension;
 }
 
-/**
- * 소득세법 제59조의4 세액공제
- * TODO: 공제율·한도 원문 확인 후 구현 — 현재는 0 반환 (계산 구조만 확보)
- *
- * 의료비: 종합소득금액 × 3% 초과분에 공제율 적용
- * 교육비: 지출액에 공제율 적용
- * 기부금: 유형별 한도·공제율 상이 (법정/지정/종교단체) — 별도 구현 필요
- */
-function calcTaxCredits(_businessIncome: number, input: TaxInput): number {
-  if (!input.taxCreditInputs) return 0;
-  // TODO: 소득세법 제59조의4 원문 확인 후 공제율과 한도 적용
-  return 0;
+function calcTaxCredits(): number {
+  /**
+   * 소득세법 제59조의4⑨②나 — 표준세액공제 (사업소득자 기본)
+   * 종합소득자(근로소득 없음) 중 성실사업자 외: 연 7만원
+   *
+   * 의료비·교육비(②③항)는 "근로소득이 있는 거주자"만 적용 — 사업소득자 해당 없음
+   * 기부금(④항)은 "사업소득만 있는 자는 제외" — 사업소득자 원칙적 해당 없음
+   */
+  return 70_000;
 }
 
 function applyTaxBracket(taxableIncome: number, taxYear: number) {
@@ -174,7 +171,7 @@ export function calculateBusinessTax(input: TaxInput): TaxResult {
     taxableIncome,
     input.taxYear,
   );
-  const taxCredit = calcTaxCredits(businessIncome, input);
+  const taxCredit = calcTaxCredits();
   const taxAfterCredit = Math.max(0, calculatedTax - taxCredit);
   const localIncomeTax = Math.floor(taxAfterCredit * LOCAL_INCOME_TAX_RATE);
 
