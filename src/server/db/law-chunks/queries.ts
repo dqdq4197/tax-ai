@@ -5,27 +5,6 @@ import { lawChunks } from "./schema";
 const SIMILARITY_THRESHOLD = 0.7;
 const DEFAULT_LIMIT = 5;
 
-type InsertLawChunkParams = {
-  content: string;
-  chunkIndex: number;
-  embedding: number[];
-  metadata: {
-    source: string;
-    article: string;
-    title: string;
-    year: number;
-    incomeTypes: string[];
-  };
-};
-
-export async function insertLawChunk(params: InsertLawChunkParams) {
-  await db.insert(lawChunks).values(params);
-}
-
-export async function deleteAllLawChunks() {
-  await db.delete(lawChunks);
-}
-
 export async function searchLawChunks(
   embedding: number[],
   incomeType: string,
