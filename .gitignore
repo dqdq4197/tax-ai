@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# law source text files (large, re-downloadable from law.go.kr)
+data/laws/**/*.txt
