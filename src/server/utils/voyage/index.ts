@@ -1,4 +1,10 @@
-import { VoyageAIClient } from "voyageai";
+import { createRequire } from "node:module";
+
+/**
+ * voyageai ESM 빌드가 extensionless import 버그로 broken — CJS 강제 로드
+ * @see https://github.com/voyage-ai/typescript-sdk/issues/26
+ */
+const { VoyageAIClient } = createRequire(import.meta.url)("voyageai");
 
 const client = new VoyageAIClient({
   apiKey: process.env.VOYAGE_API_KEY,
