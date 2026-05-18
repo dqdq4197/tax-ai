@@ -1,6 +1,6 @@
 "use client";
 
-import ClientOnly from "@/components/ClientOnly";
+import ClientOnly from "@/components/client-only";
 import {
   SidebarMenu,
   SidebarMenuItem,
