@@ -21,6 +21,7 @@
     "ai": "^6.0.184",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.2",
     "ky": "^2.0.2",
     "langfuse": "^3.38.20",
