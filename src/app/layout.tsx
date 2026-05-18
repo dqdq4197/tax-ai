@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ReactQueryProvider from "./providers/react-query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,14 +32,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="h-full">
-        <TooltipProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <main>{children}</main>
-            </SidebarInset>
-          </SidebarProvider>
-        </TooltipProvider>
+        <ReactQueryProvider>
+          <TooltipProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <main>{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
+          </TooltipProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
