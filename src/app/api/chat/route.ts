@@ -8,13 +8,16 @@ import { tools } from "@/server/agent/tools";
 import { systemPrompt } from "@/server/agent/prompts";
 import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { langfuse } from "@/server/utils/langfuse";
+import { getAnonId } from "@/server/utils/session";
 
 const MODEL: GoogleGenerativeAIModelId = "gemini-2.5-flash";
 
 export async function POST(req: Request) {
   const { messages, conversationId: existingId } = await req.json();
 
-  const conversationId = existingId ?? (await createConversation());
+  const anonId = await getAnonId();
+  const conversationId =
+    existingId ?? (await createConversation(anonId ?? "anonymous"));
   const startedAt = Date.now();
 
   const trace = langfuse.trace({

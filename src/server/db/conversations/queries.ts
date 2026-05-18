@@ -1,13 +1,16 @@
-import { desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../index";
 import { conversations } from "./schema";
 
-export async function createConversation() {
-  const [conversation] = await db.insert(conversations).values({}).returning();
+export async function createConversation(anonId: string) {
+  const [conversation] = await db
+    .insert(conversations)
+    .values({ anonId })
+    .returning();
   return conversation.id;
 }
 
-export async function listConversations() {
+export async function listConversations(anonId: string) {
   return db
     .select({
       id: conversations.id,
@@ -21,7 +24,9 @@ export async function listConversations() {
       )`,
     })
     .from(conversations)
-    .where(isNull(conversations.deletedAt))
+    .where(
+      and(isNull(conversations.deletedAt), eq(conversations.anonId, anonId)),
+    )
     .orderBy(desc(conversations.createdAt));
 }
 
