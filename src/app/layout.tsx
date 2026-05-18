@@ -37,7 +37,7 @@ export default function RootLayout({
             <SidebarProvider>
               <AppSidebar />
               <SidebarInset>
-                <main>{children}</main>
+                <main className="h-full">{children}</main>
               </SidebarInset>
             </SidebarProvider>
           </TooltipProvider>
