@@ -1,0 +1,195 @@
+import { Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/utils/cn";
+
+const supportedItems = [
+  "프리랜서 (3.3% 원천징수 대상)",
+  "1인 사업자 · 개인사업자",
+  "단순경비율 계산 (1,541개 업종코드)",
+  "기준경비율 계산 (매입·임차료·인건비 공제)",
+  "부양가족 기본공제 · 국민연금보험료 공제",
+  "환급·납부세액 계산",
+  "세법 조항 근거 검색 및 인용 (소득세법·시행령)",
+];
+
+const plannedItems = [
+  "기타소득 · 금융소득 · 연금소득 · 임대소득",
+  "근로소득",
+  "해외주식 · 국내 주식 양도소득",
+  "가상자산 소득",
+  "장부신고 · 필요경비 판단 · 홈택스 안내",
+];
+
+const roadmap = [
+  {
+    step: 1,
+    label: "사업소득 · 프리랜서",
+    desc: "단순/기준경비율, 부양가족·국민연금 공제, 환급·납부세액",
+    when: "2026 Q2 · 현재",
+    isCurrent: true,
+  },
+  {
+    step: 2,
+    label: "기타·금융·연금·임대소득",
+    desc: "강연·원고료 60% 공제, 이자·배당 분리과세, 연금소득공제, 임대소득",
+    when: "2026 Q3",
+    isCurrent: false,
+  },
+  {
+    step: 3,
+    label: "근로소득 합산",
+    desc: "근로+사업소득 동시 보유자 합산 계산, 연말정산 연동",
+    when: "2026 Q4",
+    isCurrent: false,
+  },
+  {
+    step: 4,
+    label: "해외주식 · 주식 양도소득",
+    desc: "해외주식 연 250만원 공제, 국내 대주주 양도소득세 계산",
+    when: "2027 Q1",
+    isCurrent: false,
+  },
+  {
+    step: 5,
+    label: "가상자산 소득",
+    desc: "가상자산 양도·대여 소득, 연 250만원 기본공제",
+    when: "2027 Q2",
+    isCurrent: false,
+  },
+  {
+    step: 6,
+    label: "장부신고 · 필요경비 판단 · 홈택스 안내",
+    desc: "실제 경비 장부 기반 계산, 항목별 인정 판단, 홈택스 신고 단계 안내",
+    when: "2027 Q3",
+    isCurrent: false,
+  },
+];
+
+export default function CoveragePage() {
+  return (
+    <div className="px-6 py-14 pb-20 overflow-y-auto h-full">
+      <div className="max-w-230 mx-auto">
+        <h1 className="text-[28px] font-semibold leading-snug tracking-tight mb-2">
+          상담 범위
+        </h1>
+        <p className="text-[15px] text-muted-foreground leading-relaxed mb-7 max-w-[60ch]">
+          tax·ai는 현재{" "}
+          <strong className="text-foreground font-medium">
+            사업소득(프리랜서 포함)
+          </strong>
+          의 종합소득세 상담만 지원해요. 정확한 답변을 위해 범위를 좁히고 있고,
+          다른 소득 유형은 단계적으로 확장 중이에요.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7">
+          {/* 현재 지원 */}
+          <Card className="border border-emerald-400 bg-linear-to-br from-card to-emerald-400/5 gap-0 py-0">
+            <CardHeader className="px-5 pt-5 pb-3">
+              <div className="flex items-center gap-2.5">
+                <h3 className="typo-h4 font-semibold leading-snug">현재 지원</h3>
+                <span className="typo-bold11 px-2 py-1 rounded-full leading-none tracking-wide bg-emerald-400 text-emerald-950">
+                  사업소득
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <ul>
+                {supportedItems.map((item, i) => (
+                  <li
+                    key={item}
+                    className={cn(
+                      "flex items-center gap-2.5 py-2 typo-caption3 text-muted-foreground",
+                      i > 0 && "border-t border-border/60",
+                    )}
+                  >
+                    <Check size={14} className="shrink-0 text-emerald-400" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="typo-caption4 text-muted-foreground/70 mt-3 leading-relaxed">
+                2023–2025년 세법 기준. 업종코드별 경비율은 국세청 고시를 직접 반영해요.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 지원 예정 */}
+          <Card className="border gap-0 py-0">
+            <CardHeader className="px-5 pt-5 pb-3">
+              <div className="flex items-center gap-2.5">
+                <h3 className="typo-h4 font-semibold leading-snug">지원 예정</h3>
+                <Badge
+                  variant="secondary"
+                  className="typo-bold11 tracking-wide rounded-full px-2 py-1"
+                >
+                  로드맵
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="px-5 pb-5">
+              <ul>
+                {plannedItems.map((item, i) => (
+                  <li
+                    key={item}
+                    className={cn(
+                      "flex items-center gap-2.5 py-2 typo-caption3 text-muted-foreground",
+                      i > 0 && "border-t border-border/60",
+                    )}
+                  >
+                    <X size={14} className="shrink-0 text-muted-foreground/40" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="typo-caption4 text-muted-foreground/70 mt-3 leading-relaxed">
+                해당 소득이 있다면 우선 사업소득 범위 내에서 안내드리고, 나머지는 세무사 상담을 권해드려요.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Roadmap */}
+        <div className="mt-5">
+          <h2 className="typo-h2 font-semibold leading-snug tracking-tight mb-3.5">
+            지원 확장 로드맵
+          </h2>
+          <ol>
+            {roadmap.map((item, i) => (
+              <li key={item.step}>
+                {i > 0 && <Separator className="opacity-60" />}
+                <div className="grid items-center gap-3.5 py-3.5 grid-cols-[28px_1fr_auto]">
+                  <div
+                    className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center typo-bold11 font-mono shrink-0",
+                      item.isCurrent
+                        ? "bg-sidebar-primary text-white"
+                        : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {item.step}
+                  </div>
+                  <div>
+                    <p className="typo-body2 leading-snug">{item.label}</p>
+                    <p className="typo-caption4 text-muted-foreground mt-0.5 leading-snug">
+                      {item.desc}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "typo-body5 font-mono whitespace-nowrap",
+                      item.isCurrent ? "text-sidebar-primary" : "text-muted-foreground",
+                    )}
+                  >
+                    {item.when}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
