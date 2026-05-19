@@ -24,10 +24,10 @@ export default function AppSidebar() {
   const { state } = useSidebar();
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon">
       <SidebarHeader
         className={cn(
-          "flex-row items-center p-4 pb-3.5 justify-between",
+          "flex-row items-center justify-between p-4 pb-3.5",
           "group-data-[collapsible=icon]:px-2",
         )}
       >
@@ -43,7 +43,7 @@ export default function AppSidebar() {
           <TooltipTrigger asChild>
             <SidebarTrigger
               size="icon"
-              className="text-muted-foreground hover:text-sidebar-foreground transition-color"
+              className="transition-color text-muted-foreground hover:text-sidebar-foreground"
             />
           </TooltipTrigger>
           <TooltipContent side="right" className="flex items-center gap-1.5">
@@ -59,7 +59,7 @@ export default function AppSidebar() {
         <SidebarGroup>
           <NavMenu />
         </SidebarGroup>
-        <SidebarGroup className="flex-auto overflow-hidden transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
+        <SidebarGroup className="flex-auto overflow-hidden transition-opacity duration-200 group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:opacity-0">
           <SidebarGroupLabel>최근 상담</SidebarGroupLabel>
           <RecentConversations />
         </SidebarGroup>

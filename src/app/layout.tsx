@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./components/app-sidebar";
+import TopNav from "./components/top-nav";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ReactQueryProvider from "./providers/react-query-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -30,16 +31,17 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="h-full">
         <ReactQueryProvider>
           <TooltipProvider>
             <SidebarProvider className="h-full">
               <AppSidebar />
-              <SidebarInset>
-                <main className="h-full">{children}</main>
-              </SidebarInset>
+              <main className="flex h-full w-full flex-col">
+                <TopNav />
+                <div className="min-h-0 flex-1">{children}</div>
+              </main>
             </SidebarProvider>
           </TooltipProvider>
           <Toaster position="top-right" />
