@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -34,6 +35,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="h-full">
+        <Analytics />
         <ReactQueryProvider>
           <TooltipProvider>
             <SidebarProvider className="h-full">
