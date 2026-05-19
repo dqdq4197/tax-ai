@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ChatComposer, {
   type ChatComposerHandle,
 } from "@/components/chat-composer";
-import { setPendingPrompt } from "@/utils/pending-prompt";
+import { setPendingChat } from "@/utils/pending-prompt";
 import { useCreateConversation } from "@/app/(home)/hooks/useCreateConversation";
 import { toErrorInfo } from "@/utils/to-error-info";
 import { toast } from "sonner";
@@ -29,8 +29,7 @@ export default function ChatStarter() {
 
     createConversation(undefined, {
       onSuccess: ({ id }) => {
-        setPendingPrompt(firstMessage);
-
+        setPendingChat({ conversationId: id, firstMessage });
         router.push(`/chat/${id}`);
       },
       onError: (error) => {
