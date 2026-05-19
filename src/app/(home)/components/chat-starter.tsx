@@ -11,10 +11,10 @@ import { toErrorInfo } from "@/utils/to-error-info";
 import { toast } from "sonner";
 
 const quickQuestions = [
+  { q: "프리랜서 세금 계산해줘", a: "수입·부양가족 알려주면 세액 계산" },
+  { q: "유튜브·블로그 수익도 신고해야 해?", a: "소득 종류별 신고 의무 확인" },
   { q: "단순경비율 vs 기준경비율", a: "나에게 유리한 방식 찾기" },
-  { q: "업종코드를 모르겠어요", a: "직업으로 설명하면 코드 찾아드려요" },
-  { q: "3.3% 원천징수 환급", a: "얼마나 돌려받을 수 있는지" },
-  { q: "부양가족 공제 받을 수 있나요", a: "소득세법 기준으로 조건 확인" },
+  { q: "3.3% 원천징수 환급받을 수 있어?", a: "공제 적용 후 환급액 계산" },
 ];
 
 export default function ChatStarter() {
@@ -40,7 +40,7 @@ export default function ChatStarter() {
   };
 
   return (
-    <div className="max-w-155 mx-auto">
+    <div className="mx-auto max-w-155">
       <ChatComposer
         ref={composerRef}
         value={draft}
@@ -50,7 +50,7 @@ export default function ChatStarter() {
         onSubmit={() => submit(draft)}
       />
 
-      <div className="grid grid-cols-2 gap-2.5 mt-5">
+      <div className="mt-5 grid grid-cols-2 gap-2.5">
         {quickQuestions.map((item) => (
           <button
             key={item.q}
@@ -60,9 +60,9 @@ export default function ChatStarter() {
               setDraft(item.q);
               composerRef.current?.focus();
             }}
-            className="text-left bg-card border border-border rounded-xl px-4 py-3.5 hover:border-sidebar-primary hover:-translate-y-px active:translate-y-px transition-[border-color,transform] duration-150 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:translate-y-0"
+            className="rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-sidebar-primary active:translate-y-px disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:border-border"
           >
-            <p className="typo-body3 text-foreground mb-1">{item.q}</p>
+            <p className="mb-1 typo-body3 text-foreground">{item.q}</p>
             <p className="typo-caption4 text-muted-foreground">{item.a}</p>
           </button>
         ))}
