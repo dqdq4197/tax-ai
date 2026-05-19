@@ -35,7 +35,7 @@ export default function RootLayout({
       <body className="h-full">
         <ReactQueryProvider>
           <TooltipProvider>
-            <SidebarProvider>
+            <SidebarProvider className="h-full">
               <AppSidebar />
               <SidebarInset>
                 <main className="h-full">{children}</main>

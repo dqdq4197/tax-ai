@@ -48,7 +48,7 @@ export default function ChatComposer({
         ref={textareaRef}
         rows={1}
         value={value}
-        disabled={disabled || isStreaming}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
