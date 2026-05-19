@@ -14,7 +14,7 @@ import {
   saveMessage,
 } from "@/server/db/messages/queries";
 import { tools } from "@/server/agent/tools";
-import { systemPrompt } from "@/server/agent/prompts";
+import { buildSystemPrompt } from "@/server/agent/prompts";
 import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { langfuse } from "@/server/utils/langfuse";
 import { getAnonId } from "@/server/utils/session";
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: google(MODEL),
-    system: systemPrompt,
+    system: buildSystemPrompt(),
     messages: await convertToModelMessages(messages),
     tools,
     stopWhen: stepCountIs(10),
