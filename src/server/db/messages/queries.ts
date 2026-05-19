@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull, ne, or } from "drizzle-orm";
+import { and, asc, count, eq, isNull, ne, or } from "drizzle-orm";
 import { db } from "../index";
 import { messages, type MessageStatus, type Role } from "./schema";
 
@@ -83,6 +83,21 @@ export async function finalizeAssistantMessage(
         ),
       );
   }
+}
+
+export async function getCountUserMessages(
+  conversationId: string,
+): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.conversationId, conversationId),
+        eq(messages.role, "user"),
+      ),
+    );
+  return row?.value ?? 0;
 }
 
 export async function getMessagesByConversation(conversationId: string) {

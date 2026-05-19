@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getConversations, getMessages, type getMessagesParams } from "./api";
+import { getConversations, getMessages, type GetMessagesParams } from "./api";
 
 export function getConversationsQuery() {
   return queryOptions({
@@ -8,7 +8,7 @@ export function getConversationsQuery() {
   });
 }
 
-export function getMessagesQuery(params: getMessagesParams) {
+export function getMessagesQuery(params: GetMessagesParams) {
   return queryOptions({
     queryKey: ["messages", params],
     queryFn: () => getMessages(params),
