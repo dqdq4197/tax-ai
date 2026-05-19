@@ -16,6 +16,10 @@ export function setPendingChat(chat: PendingChat) {
  * (이전 세션의 오래된 데이터인 경우)에는 undefined를 반환한다.
  **/
 export function takePendingChat(conversationId: string): string | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
   const raw = sessionStorage.getItem(SESSION_KEY);
   if (!raw) {
     return undefined;
