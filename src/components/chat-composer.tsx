@@ -57,7 +57,7 @@ export default function ChatComposer({
           }
         }}
         placeholder={placeholder}
-        className="min-h-0 max-h-50 resize-none border-none bg-transparent p-1 typo-body1 leading-relaxed shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0 dark:bg-transparent"
+        className="min-h-0 max-h-50 resize-none border-none bg-transparent p-1 typo-body1 leading-relaxed shadow-none placeholder:text-muted-foreground/50 focus-visible:ring-0 dark:bg-transparent disabled:bg-transparent dark:disabled:bg-transparent"
       />
       <div className="mt-1.5 flex items-center justify-between">
         <div />
@@ -85,7 +85,7 @@ export default function ChatComposer({
             <button
               type="button"
               onClick={onSubmit}
-              disabled={!value.trim()}
+              disabled={disabled || !value.trim()}
               className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-white transition-[opacity,transform] duration-150 hover:opacity-90 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-30"
             >
               <Send size={15} />

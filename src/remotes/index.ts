@@ -1,6 +1,7 @@
 export type { Message } from "./schemas";
 export {
   getConversations,
+  createConversation,
   updateConversationTitle,
   deleteConversation,
   getMessages,
@@ -16,7 +17,7 @@ export type {
   createShareParams,
   revokeShareParams,
 } from "./conversations/api";
-export { conversationsQuery, getMessagesQuery } from "./conversations/query";
+export { getConversationsQuery, getMessagesQuery } from "./conversations/query";
 export { getSharedConversation } from "./share/api";
 export type {
   SharedConversation,

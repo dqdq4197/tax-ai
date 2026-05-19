@@ -15,6 +15,12 @@ export function getConversations() {
   return client.get("conversations").json(z.array(ConversationSchema));
 }
 
+const CreateConversationResponseSchema = z.object({ id: z.string() });
+
+export function createConversation() {
+  return client.post("conversations").json(CreateConversationResponseSchema);
+}
+
 export interface updateConversationTitleParams {
   id: string;
   title: string;

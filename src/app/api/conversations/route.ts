@@ -1,4 +1,7 @@
-import { listConversations } from "@/server/db/conversations/queries";
+import {
+  createConversation,
+  listConversations,
+} from "@/server/db/conversations/queries";
 import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { getAnonId } from "@/server/utils/session";
 
@@ -21,4 +24,15 @@ export async function GET() {
   }));
 
   return Response.json(conversations);
+}
+
+export async function POST() {
+  const anonId = await getAnonId();
+
+  if (!anonId) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const id = await createConversation(anonId);
+  return Response.json({ id });
 }

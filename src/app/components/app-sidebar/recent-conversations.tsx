@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { conversationsQuery } from "@/remotes/conversations/query";
+import { getConversationsQuery } from "@/remotes/conversations/query";
 import { formatRelativeDate } from "@/utils/format-relative-date";
 import RecentConversationsSkeleton from "./recent-conversations-skeleton";
 import RecentConversationsError from "./recent-conversations-error";
@@ -27,7 +27,7 @@ export default function RecentConversations() {
     error,
     refetch,
   } = useQuery({
-    ...conversationsQuery(),
+    ...getConversationsQuery(),
     placeholderData: keepPreviousData,
   });
 

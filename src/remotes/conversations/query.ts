@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { getConversations, getMessages, type getMessagesParams } from "./api";
 
-export function conversationsQuery() {
+export function getConversationsQuery() {
   return queryOptions({
     queryKey: ["conversations"],
     queryFn: getConversations,
