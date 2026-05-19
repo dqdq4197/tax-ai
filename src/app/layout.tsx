@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./components/app-sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ReactQueryProvider from "./providers/react-query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
               </SidebarInset>
             </SidebarProvider>
           </TooltipProvider>
+          <Toaster position="top-right" />
         </ReactQueryProvider>
       </body>
     </html>
