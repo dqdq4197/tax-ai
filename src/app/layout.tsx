@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import "../styles/globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar/constants";
 import AppSidebar from "./components/app-sidebar";
 import TopNav from "./components/top-nav";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,16 +21,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "tax·ai — 종합소득세 AI 상담",
   description: "사업소득·프리랜서를 위한 종합소득세 AI 상담 서비스",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const sidebarOpen = cookieStore.get(SIDEBAR_COOKIE_NAME)?.value === "true";
+
   return (
     <html
       lang="ko"
@@ -38,7 +45,7 @@ export default function RootLayout({
         <Analytics />
         <ReactQueryProvider>
           <TooltipProvider>
-            <SidebarProvider className="h-full">
+            <SidebarProvider defaultOpen={sidebarOpen} className="h-full">
               <AppSidebar />
               <main className="flex h-full w-full flex-col">
                 <TopNav />
