@@ -118,6 +118,11 @@
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
+@utility brand-icon-gradient {
+  background: linear-gradient(135deg, var(--primary), oklch(0.6 0.18 265));
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

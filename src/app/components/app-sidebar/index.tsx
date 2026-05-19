@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/cn";
+import { BrandIcon } from "@/components/ui/brand-icon";
 import NavMenu from "./nav-menu";
 import RecentConversations from "./recent-conversations";
 import NewConversationButton from "./new-conversation-button";
@@ -32,17 +33,7 @@ export default function AppSidebar() {
       >
         {/* Logo — hidden in icon mode */}
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-          <div
-            className="size-5.5 rounded-[7px] grid place-items-center text-white font-bold text-[12px] tracking-[-0.02em] shrink-0"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--sidebar-primary), oklch(0.6 0.18 265))",
-              boxShadow:
-                "0 4px 12px color-mix(in oklch, var(--sidebar-primary) 40%, transparent)",
-            }}
-          >
-            τ
-          </div>
+          <BrandIcon size="sm" />
           <span className="typo-body1 font-bold text-sidebar-foreground">
             tax<span className="text-sidebar-primary">·ai</span>
           </span>
