@@ -9,6 +9,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { conversations } from "../conversations/schema";
 
+export type Role = "user" | "assistant";
+export type MessageStatus = "generating" | "complete" | "error" | "abandoned";
+
 export const messages = pgTable(
   "messages",
   {
@@ -16,7 +19,8 @@ export const messages = pgTable(
     conversationId: uuid("conversation_id")
       .notNull()
       .references(() => conversations.id, { onDelete: "cascade" }),
-    role: text("role").$type<"user" | "assistant">().notNull(),
+    role: text("role").$type<Role>().notNull(),
+    status: text("status").$type<MessageStatus>(),
     model: text("model"),
     content: text("content").notNull(),
     toolCalls: jsonb("tool_calls"),

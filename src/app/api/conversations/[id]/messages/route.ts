@@ -12,6 +12,7 @@ export async function GET(
   const messages = rows.map((row) => ({
     id: row.id,
     role: row.role,
+    status: row.status,
     content: encryption.decrypt(row.content),
     createdAt: row.createdAt,
   }));
