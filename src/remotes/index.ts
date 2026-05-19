@@ -26,3 +26,6 @@ export type {
   getSharedConversationParams,
 } from "./share/api";
 export { sharedConversationQuery } from "./share/query";
+export { getLawArticle } from "./law/api";
+export type { LawArticle } from "./law/api";
+export { getLawArticleQuery } from "./law/query";

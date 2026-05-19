@@ -63,10 +63,11 @@ function CopyAction({ content }: { content: string }) {
 interface AssistantBubbleProps {
   content: string;
   isStreaming?: boolean;
+  onArticleClick?: (ref: string) => void;
 }
 
 export default function AssistantBubble(props: AssistantBubbleProps) {
-  const { content, isStreaming = false } = props;
+  const { content, isStreaming = false, onArticleClick } = props;
 
   return (
     <div className="group/msg flex flex-col gap-3.5">
@@ -80,7 +81,7 @@ export default function AssistantBubble(props: AssistantBubbleProps) {
               <div className="space-y-2 text-[15px] leading-relaxed text-muted-foreground">
                 {content.split(/\n\n+/).map((segment, i) => (
                   <div key={i} className="animate-in duration-300 fade-in">
-                    <Markdown text={segment} />
+                    <Markdown text={segment} onArticleClick={onArticleClick} />
                   </div>
                 ))}
               </div>

@@ -3,7 +3,10 @@ import { z } from "zod";
 import { calculate } from "./calculators";
 import { verifyResult } from "./calculators/business/verify";
 import { getQueryEmbedding } from "../utils/voyage";
-import { searchLawChunks } from "../db/law-chunks/queries";
+import {
+  getLawChunksByArticle,
+  searchLawChunks,
+} from "../db/law-chunks/queries";
 
 export const tools = {
   vector_search: tool({
@@ -24,6 +27,26 @@ export const tools = {
         article: (c.metadata as { article: string }).article,
         content: c.content,
         similarity: c.similarity,
+      }));
+    },
+  }),
+
+  law_article_lookup: tool({
+    description:
+      "조항 번호로 법령 원문을 직접 조회합니다. 사용자가 특정 조항을 언급하거나 원문 전체가 필요할 때 사용하세요. vector_search 대신 사용하세요.",
+    inputSchema: z.object({
+      articles: z
+        .array(z.string())
+        .describe(
+          "조회할 조항명 목록 (예: ['소득세법 제70조', '소득세법 제73조'])",
+        ),
+    }),
+    execute: async ({ articles }) => {
+      const chunks = await getLawChunksByArticle(articles);
+      return chunks.map((chunk) => ({
+        article: chunk.metadata.article,
+        title: chunk.metadata.title,
+        content: chunk.content,
       }));
     },
   }),
