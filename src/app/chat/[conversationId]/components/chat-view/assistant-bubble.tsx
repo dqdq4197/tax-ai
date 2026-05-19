@@ -7,7 +7,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Copy, ThumbsDown, ThumbsUp, type LucideIcon } from "lucide-react";
+import {
+  Check,
+  Copy,
+  ThumbsDown,
+  ThumbsUp,
+  type LucideIcon,
+} from "lucide-react";
+import { useState } from "react";
 
 interface MessageActionProps {
   tooltip: string;
@@ -30,6 +37,29 @@ function MessageAction(props: MessageActionProps) {
   );
 }
 
+function CopyAction({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon-sm" onClick={handleCopy}>
+          {copied ? <Check /> : <Copy />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        {copied ? "복사됨" : "복사"}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 interface AssistantBubbleProps {
   content: string;
   isStreaming?: boolean;
@@ -42,26 +72,20 @@ export default function AssistantBubble(props: AssistantBubbleProps) {
     <div className="group/msg flex flex-col gap-3.5">
       <div className="flex gap-3.5">
         <BrandIcon className="mt-0.5" />
-        <div className="flex-1">
+        <div className="flex flex-1 items-center">
           {isStreaming && !content ? (
             <LoadingDots />
           ) : (
             <div className="flex flex-col gap-2">
-              <div className="typo-body1 leading-relaxed text-foreground">
-                <Markdown text={content} />
-                {isStreaming && (
-                  <span
-                    className="ml-0.5 inline-block h-[1em] w-2 animate-pulse rounded-sm bg-primary"
-                    style={{ verticalAlign: "-2px" }}
-                  />
-                )}
+              <div className="space-y-2 text-[15px] leading-relaxed text-muted-foreground">
+                {content.split(/\n\n+/).map((segment, i) => (
+                  <div key={i} className="animate-in duration-300 fade-in">
+                    <Markdown text={segment} />
+                  </div>
+                ))}
               </div>
               <div className="flex gap-0.5 opacity-0 transition-opacity group-hover/msg:opacity-100">
-                <MessageAction
-                  icon={Copy}
-                  tooltip="복사"
-                  onClick={() => navigator.clipboard.writeText(content)}
-                />
+                <CopyAction content={content} />
                 <MessageAction
                   icon={ThumbsUp}
                   tooltip="긍정적인 피드백 제공"
