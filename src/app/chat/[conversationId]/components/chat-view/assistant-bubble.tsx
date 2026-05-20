@@ -79,9 +79,12 @@ export default function AssistantBubble(props: AssistantBubbleProps) {
           ) : (
             <div className="flex flex-col gap-2">
               <div className="space-y-2 text-[15px] leading-relaxed text-muted-foreground">
-                {content.split(/\n\n+/).map((segment, i) => (
+                {content.split(/\n\n+/).map((segment, i, arr) => (
                   <div key={i} className="animate-in duration-300 fade-in">
                     <Markdown text={segment} onArticleClick={onArticleClick} />
+                    {isStreaming && i === arr.length - 1 && (
+                      <span className="inline-block h-[1em] w-0.5 translate-y-[0.1em] animate-pulse bg-foreground/70 align-middle" />
+                    )}
                   </div>
                 ))}
               </div>

@@ -10,7 +10,7 @@ const sourcePattern = LAW_SOURCES.map((s) => s.replace(/\s+/g, "\\s+")).join(
   "|",
 );
 export const ARTICLE_REF_RE = new RegExp(
-  `(${sourcePattern})\\s+(제\\d+조(?:의\\d+)?)`,
+  `(${sourcePattern})\\s+(제\\d+조(?:의\\d+)?)((?:\\([^)]+\\))?)`,
   "g",
 );
 

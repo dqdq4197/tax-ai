@@ -138,6 +138,8 @@ export default function ChatInterface({
               />
             ),
           )}
+          {/* 메세지가 오기 전, 로딩 시작 */}
+          {status === "submitted" && <AssistantBubble content="" isStreaming />}
         </div>
       </ChatLayout>
 

@@ -4,8 +4,8 @@ import { BookOpen } from "lucide-react";
 import { ARTICLE_REF_RE } from "@/utils/law-sources";
 
 function linkifyArticleRefs(text: string): string {
-  return text.replace(ARTICLE_REF_RE, (match) => {
-    const ref = match.replace(/\s+/g, " ").trim();
+  return text.replace(ARTICLE_REF_RE, (match, law: string, article: string) => {
+    const ref = `${law.replace(/\s+/g, " ")} ${article}`.trim();
     return `[${match}](article://${encodeURIComponent(ref)})`;
   });
 }
@@ -55,7 +55,7 @@ export default function Markdown({ text, onArticleClick }: Props) {
           );
         },
         pre: ({ children }) => (
-          <pre className="my-3 overflow-x-auto rounded-lg bg-muted p-4 font-mono typo-body4 leading-relaxed text-foreground">
+          <pre className="my-3 max-w-full overflow-x-auto rounded-lg bg-muted p-4 font-mono typo-body4 leading-relaxed text-foreground">
             {children}
           </pre>
         ),
