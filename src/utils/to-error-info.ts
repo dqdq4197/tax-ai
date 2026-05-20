@@ -33,7 +33,7 @@ export function toErrorInfo(error: unknown): ErrorInfo {
       code: "INVALID_RESPONSE",
       message: "데이터를 불러오는 중 문제가 발생했어요.",
       detail: error.message,
-      recoveryAction: "retry",
+      recoveryAction: "contact-support",
     };
   }
 
