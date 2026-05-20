@@ -1,5 +1,6 @@
 import { and, or, sql } from "drizzle-orm";
 
+import { parseArticleRef } from "@/utils/law-sources";
 import { db } from "../index";
 import { lawChunks } from "./schema";
 
@@ -31,32 +32,6 @@ export async function searchLawChunks(
     .limit(limit);
 }
 
-function parseArticleRef(article: string): {
-  source: string | null;
-  articleNum: string;
-} {
-  const s = article.replace(/\s+/g, " ").trim();
-
-  if (s.startsWith("소득세법 시행령 ")) {
-    return {
-      source: "소득세법 시행령",
-      articleNum: s.slice("소득세법 시행령 ".length),
-    };
-  }
-
-  if (s.startsWith("소득세법 시행규칙 ")) {
-    return {
-      source: "소득세법 시행규칙",
-      articleNum: s.slice("소득세법 시행규칙 ".length),
-    };
-  }
-
-  if (s.startsWith("소득세법 ")) {
-    return { source: "소득세법", articleNum: s.slice("소득세법 ".length) };
-  }
-
-  return { source: null, articleNum: s };
-}
 
 export async function getLawChunksByArticle(articles: string[]) {
   if (articles.length === 0) {

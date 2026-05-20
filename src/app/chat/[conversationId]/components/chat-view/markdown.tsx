@@ -1,9 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { BookOpen } from "lucide-react";
-
-const ARTICLE_REF_RE =
-  /(소득세법(?:\s+시행령|\s+시행규칙)?)\s+(제\d+조(?:의\d+)?)/g;
+import { ARTICLE_REF_RE } from "@/utils/law-sources";
 
 function linkifyArticleRefs(text: string): string {
   return text.replace(ARTICLE_REF_RE, (match) => {
