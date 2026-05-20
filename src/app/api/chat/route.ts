@@ -19,7 +19,7 @@ import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { langfuse } from "@/server/utils/langfuse";
 import { getAnonId } from "@/server/utils/session";
 
-const MODEL: GoogleGenerativeAIModelId = "gemini-2.5-flash";
+const MODEL: GoogleGenerativeAIModelId = "gemini-2.5-pro";
 
 export async function POST(req: Request) {
   const {

@@ -4,7 +4,7 @@ import { parseArticleRef } from "@/utils/law-sources";
 import { db } from "../index";
 import { lawChunks } from "./schema";
 
-const SIMILARITY_THRESHOLD = 0.7;
+const SIMILARITY_THRESHOLD = 0.6;
 const DEFAULT_LIMIT = 5;
 
 export async function searchLawChunks(
@@ -31,7 +31,6 @@ export async function searchLawChunks(
     )
     .limit(limit);
 }
-
 
 export async function getLawChunksByArticle(articles: string[]) {
   if (articles.length === 0) {
