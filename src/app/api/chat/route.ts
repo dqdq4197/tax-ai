@@ -89,7 +89,52 @@ export async function POST(req: Request) {
         finishReason: event.finishReason,
       });
 
-      trace.update({ output: { text: event.text } });
+      const allToolNames = event.steps.flatMap((s) =>
+        s.toolCalls.map((t) => t.toolName),
+      );
+
+      trace.update({
+        output: { text: event.text },
+        metadata: {
+          model: MODEL,
+          durationMs: Date.now() - startedAt,
+          inputTokens: event.totalUsage.inputTokens,
+          outputTokens: event.totalUsage.outputTokens,
+          stepCount: event.steps.length,
+          toolCallCount: allToolNames.length,
+          toolsUsed: [...new Set(allToolNames)],
+          finishReason: event.finishReason,
+        },
+      });
+
+      const calcErrorCount = event.steps
+        .flatMap((s) => s.content)
+        .filter(
+          (c) =>
+            c.type === "tool-error" &&
+            "toolName" in c &&
+            c.toolName === "tax_calculator",
+        ).length;
+
+      const calcSuccessCount = event.steps
+        .flatMap((s) => s.toolResults)
+        .filter((r) => r.toolName === "tax_calculator").length;
+
+      if (calcSuccessCount + calcErrorCount > 0) {
+        langfuse.score({
+          traceId: trace.id,
+          name: "calculator_success",
+          value: calcErrorCount === 0 ? 1 : 0,
+        });
+      }
+
+      // stopWhen: stepCountIs(10) 도달 시 steps.length === 10
+      langfuse.score({
+        traceId: trace.id,
+        name: "max_steps_hit",
+        value: event.steps.length >= 10 ? 1 : 0,
+      });
+
       await langfuse.flushAsync();
     },
   });
