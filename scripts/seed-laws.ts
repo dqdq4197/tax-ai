@@ -50,22 +50,26 @@ async function getEmbedding(text: string): Promise<number[]> {
 
 const FILES: {
   path: string;
+  lawName: string;
   lawVersion: string; // 법령 시행일 (YYYY-MM-DD), 법제처 기준
   incomeTypes: string[];
 }[] = [
   // ── 공통 ────────────────────────────────────────────────────────────────
   {
     path: "data/raw/소득세법.json",
+    lawName: "소득세법",
     lawVersion: "2026-04-21",
     incomeTypes: [],
   },
   {
     path: "data/raw/소득세법_시행령.json",
+    lawName: "소득세법 시행령",
     lawVersion: "2026-04-23",
     incomeTypes: [],
   },
   {
     path: "data/raw/소득세법_시행규칙.json",
+    lawName: "소득세법 시행규칙",
     lawVersion: "2026-04-21",
     incomeTypes: [],
   },
@@ -87,11 +91,10 @@ async function main() {
     }
 
     const parsedLaw: ParsedLaw = JSON.parse(readFileSync(file.path, "utf-8"));
+    parsedLaw.law_name = file.lawName;
     const chunks = chunkParsedLaw(parsedLaw, file.lawVersion, file.incomeTypes);
 
-    console.log(
-      `\n[${parsedLaw.law_name}] ${chunks.length}개 청크 처리 시작...`,
-    );
+    console.log(`\n[${file.lawName}] ${chunks.length}개 청크 처리 시작...`);
 
     for (const chunk of chunks) {
       const embedding = await getEmbedding(chunk.text);
