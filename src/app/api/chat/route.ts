@@ -17,6 +17,7 @@ import { tools } from "@/server/agent/tools";
 import { buildSystemPrompt } from "@/server/agent/prompts";
 import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { langfuse } from "@/server/utils/langfuse";
+import { scoreChatTrace } from "@/server/utils/langfuse/scoring";
 import { getAnonId } from "@/server/utils/session";
 
 const MODEL: GoogleGenerativeAIModelId = "gemini-2.5-pro";
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
     system: buildSystemPrompt(),
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: stepCountIs(10),
+    stopWhen: stepCountIs(6),
     onFinish: async (event) => {
       const allToolCalls = event.steps.flatMap((s) => s.toolCalls);
 
@@ -107,33 +108,7 @@ export async function POST(req: Request) {
         },
       });
 
-      const calcErrorCount = event.steps
-        .flatMap((s) => s.content)
-        .filter(
-          (c) =>
-            c.type === "tool-error" &&
-            "toolName" in c &&
-            c.toolName === "tax_calculator",
-        ).length;
-
-      const calcSuccessCount = event.steps
-        .flatMap((s) => s.toolResults)
-        .filter((r) => r.toolName === "tax_calculator").length;
-
-      if (calcSuccessCount + calcErrorCount > 0) {
-        langfuse.score({
-          traceId: trace.id,
-          name: "calculator_success",
-          value: calcErrorCount === 0 ? 1 : 0,
-        });
-      }
-
-      // stopWhen: stepCountIs(10) 도달 시 steps.length === 10
-      langfuse.score({
-        traceId: trace.id,
-        name: "max_steps_hit",
-        value: event.steps.length >= 10 ? 1 : 0,
-      });
+      scoreChatTrace(trace.id, event, 6);
 
       await langfuse.flushAsync();
     },
