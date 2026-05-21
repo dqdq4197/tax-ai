@@ -1,9 +1,9 @@
 /**
- * 세법 텍스트를 pgvector DB에 삽입하는 시드 스크립트.
+ * data/raw/**\/*.json (parse-hwpx.ts 출력)을 읽어 청킹 후 pgvector DB에 삽입한다.
  * 실행: pnpm db:seed
  *
  * 사전 조건:
- *   - data/laws/ 에 텍스트 파일 배치 (아래 FILES 목록 참고)
+ *   - pnpm parse-hwpx 실행 완료 (data/raw/*.json 생성)
  *   - .env.local 에 DATABASE_URL, VOYAGE_API_KEY 설정
  */
 
@@ -12,7 +12,7 @@ import { readFileSync, existsSync } from "fs";
 
 config({ path: ".env.local" });
 
-import { chunkByArticle } from "./chunk";
+import { chunkParsedLaw, type ParsedLaw } from "./chunk";
 import { VoyageAIClient } from "voyageai";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
@@ -29,7 +29,7 @@ const db = drizzle(sql);
 async function getEmbedding(text: string): Promise<number[]> {
   const res = await voyage.embed({
     input: text,
-    model: "voyage-3",
+    model: "voyage-3.5",
     inputType: "document",
   });
   const embedding = res.data?.[0]?.embedding;
@@ -40,38 +40,35 @@ async function getEmbedding(text: string): Promise<number[]> {
 // ─── 파일 목록 ───────────────────────────────────────────────────────────────
 //
 // 폴더 구조:
-//   data/laws/common/    — 공통 조항 (incomeTypes: [])
-//   data/laws/business/  — 사업소득 전용 (incomeTypes: ['business', 'freelance'])
-//   data/laws/employment/— 근로소득 전용 (추후 추가 시)
+//   data/raw/       — parse-hwpx.ts 가 생성한 .json 파일
 //
-// 소득 유형 추가 시: 폴더 생성 + FILES 항목 추가
+// incomeTypes:
+//   []                    — 공통 (소득 유형 무관)
+//   ['business', 'freelance'] — 사업/프리랜서 전용
+//
+// 소득 유형 추가 시: FILES 항목 추가
 
 const FILES: {
   path: string;
-  source: string;
   lawVersion: string; // 법령 시행일 (YYYY-MM-DD), 법제처 기준
   incomeTypes: string[];
 }[] = [
   // ── 공통 ────────────────────────────────────────────────────────────────
   {
-    path: "data/laws/common/소득세법.txt",
-    source: "소득세법",
+    path: "data/raw/소득세법.json",
     lawVersion: "2026-04-21",
     incomeTypes: [],
   },
   {
-    path: "data/laws/common/소득세법_시행령.txt",
-    source: "소득세법 시행령",
+    path: "data/raw/소득세법_시행령.json",
     lawVersion: "2026-04-23",
     incomeTypes: [],
   },
-  // ── 근로소득 (추후) ───────────────────────────────────────────────────────
-  // {
-  //   path: "data/laws/employment/근로소득_공제.txt",
-  //   source: "소득세법",
-  //   lawVersion: "YYYY-MM-DD",
-  //   incomeTypes: ["employment"],
-  // },
+  {
+    path: "data/raw/소득세법_시행규칙.json",
+    lawVersion: "2026-04-21",
+    incomeTypes: [],
+  },
 ];
 
 // ─── 메인 ────────────────────────────────────────────────────────────────────
@@ -89,33 +86,29 @@ async function main() {
       continue;
     }
 
-    const text = readFileSync(file.path, "utf-8");
-    const chunks = chunkByArticle(text);
+    const parsedLaw: ParsedLaw = JSON.parse(readFileSync(file.path, "utf-8"));
+    const chunks = chunkParsedLaw(parsedLaw, file.lawVersion, file.incomeTypes);
 
-    console.log(`\n[${file.source}] ${chunks.length}개 청크 처리 시작...`);
+    console.log(
+      `\n[${parsedLaw.law_name}] ${chunks.length}개 청크 처리 시작...`,
+    );
 
     for (const chunk of chunks) {
-      const embedding = await getEmbedding(chunk.content);
+      const embedding = await getEmbedding(chunk.text);
 
       await db.insert(lawChunks).values({
-        content: chunk.content,
-        chunkIndex: chunk.chunkIndex,
+        content: chunk.text,
+        chunkIndex: chunk.metadata.order_index,
         embedding,
-        metadata: {
-          source: file.source,
-          article: chunk.article,
-          title: chunk.title,
-          lawVersion: file.lawVersion,
-          incomeTypes: file.incomeTypes,
-        },
+        metadata: chunk.metadata,
       });
 
       process.stdout.write(
-        `  저장: ${chunk.article} (${chunk.title}) [${chunk.chunkIndex + 1}/${chunks.length}]\r`,
+        `  저장: ${chunk.metadata.article} [${chunk.metadata.order_index + 1}/${chunks.length}]\r`,
       );
       total++;
     }
-    console.log(`  ${file.source} 완료.                              `);
+    console.log(`  ${parsedLaw.law_name} 완료.                              `);
   }
 
   console.log(`\n총 ${total}개 청크 삽입 완료.`);

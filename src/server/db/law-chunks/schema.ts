@@ -32,6 +32,15 @@ export const lawChunks = pgTable(
         title: string;
         lawVersion: string; // 법령 시행일 (YYYY-MM-DD), 법제처 기준
         incomeTypes: string[];
+        paragraph: string;
+        chunk_type: "definition" | "rule" | "exception" | "procedure" | "mixed";
+        parent_article: string;
+        references: string[];
+        keywords: string[];
+        token_estimate: number;
+        order_index: number;
+        chapter: string | null;
+        section: string | null;
       }>()
       .notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
