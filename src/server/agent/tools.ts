@@ -6,6 +6,7 @@ import { getQueryEmbedding } from "../utils/voyage";
 import {
   getLawChunksByArticle,
   searchLawChunks,
+  type ChunkType,
 } from "../db/law-chunks/queries";
 
 export const tools = {
@@ -19,12 +20,26 @@ export const tools = {
         .describe(
           "소득 유형 — business: 일반 사업소득, freelance: 인적용역·프리랜서",
         ),
+      chunkType: z
+        .enum(["definition", "rule", "exception", "procedure", "mixed"])
+        .optional()
+        .describe(
+          "청크 타입 필터 — 용어 정의 질문: definition, 신고·서식 절차: procedure, 예외·단서 규정: exception. 일반 검색은 생략",
+        ),
     }),
-    execute: async ({ query, incomeType }) => {
+    execute: async ({ query, incomeType, chunkType }) => {
       const embedding = await getQueryEmbedding(query);
-      const chunks = await searchLawChunks(embedding, incomeType);
+      const chunks = await searchLawChunks(
+        embedding,
+        incomeType,
+        undefined,
+        chunkType as ChunkType | undefined,
+        query,
+      );
       return chunks.map((c) => ({
-        article: (c.metadata as { article: string }).article,
+        law: c.metadata.source,
+        article: c.metadata.article,
+        paragraph: c.metadata.paragraph,
         content: c.content,
         similarity: c.similarity,
       }));
@@ -44,7 +59,9 @@ export const tools = {
     execute: async ({ articles }) => {
       const chunks = await getLawChunksByArticle(articles);
       return chunks.map((chunk) => ({
+        law: chunk.metadata.source,
         article: chunk.metadata.article,
+        paragraph: chunk.metadata.paragraph,
         title: chunk.metadata.title,
         content: chunk.content,
       }));

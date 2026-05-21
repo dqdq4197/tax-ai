@@ -4,30 +4,61 @@ import { parseArticleRef } from "@/utils/law-sources";
 import { db } from "../index";
 import { lawChunks } from "./schema";
 
-const SIMILARITY_THRESHOLD = 0.6;
+const VECTOR_THRESHOLD = 0.6;
+const VECTOR_THRESHOLD_HYBRID = 0.5; // BM25가 보완하므로 완화
 const DEFAULT_LIMIT = 5;
+
+export type ChunkType =
+  | "definition"
+  | "rule"
+  | "exception"
+  | "procedure"
+  | "mixed";
 
 export async function searchLawChunks(
   embedding: number[],
   incomeType: string,
   limit = DEFAULT_LIMIT,
+  chunkType?: ChunkType,
+  queryText?: string,
 ) {
+  const vec = JSON.stringify(embedding);
+
+  // queryText가 있으면 hybrid(BM25 0.3 + vector 0.7), 없으면 vector only
+  const scoreExpr = queryText
+    ? sql<number>`(1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
+        + ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText})) * 0.3`
+    : sql<number>`1 - (${lawChunks.embedding} <=> ${vec}::vector)`;
+
+  const candidateFilter = queryText
+    ? or(
+        sql`1 - (${lawChunks.embedding} <=> ${vec}::vector) > ${VECTOR_THRESHOLD_HYBRID}`,
+        sql`${lawChunks.contentTsv} @@ websearch_to_tsquery('simple', ${queryText})`,
+      )
+    : sql`1 - (${lawChunks.embedding} <=> ${vec}::vector) > ${VECTOR_THRESHOLD}`;
+
   return db
     .select({
       content: lawChunks.content,
       metadata: lawChunks.metadata,
-      similarity: sql<number>`1 - (${lawChunks.embedding} <=> ${JSON.stringify(embedding)}::vector)`,
+      similarity: scoreExpr,
     })
     .from(lawChunks)
     .where(
       and(
-        sql`1 - (${lawChunks.embedding} <=> ${JSON.stringify(embedding)}::vector) > ${SIMILARITY_THRESHOLD}`,
+        candidateFilter,
         sql`${lawChunks.metadata}->'incomeTypes' = '[]'::jsonb
             OR ${lawChunks.metadata}->'incomeTypes' ? ${incomeType}`,
+        chunkType
+          ? sql`${lawChunks.metadata}->>'chunk_type' = ${chunkType}`
+          : undefined,
       ),
     )
     .orderBy(
-      sql`${lawChunks.embedding} <=> ${JSON.stringify(embedding)}::vector`,
+      queryText
+        ? sql`(1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
+            + ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText})) * 0.3 DESC`
+        : sql`${lawChunks.embedding} <=> ${vec}::vector`,
     )
     .limit(limit);
 }
