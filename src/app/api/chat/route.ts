@@ -90,10 +90,6 @@ export async function POST(req: Request) {
         finishReason: event.finishReason,
       });
 
-      const allToolNames = event.steps.flatMap((s) =>
-        s.toolCalls.map((t) => t.toolName),
-      );
-
       trace.update({
         output: { text: event.text },
         metadata: {
@@ -102,13 +98,15 @@ export async function POST(req: Request) {
           inputTokens: event.totalUsage.inputTokens,
           outputTokens: event.totalUsage.outputTokens,
           stepCount: event.steps.length,
-          toolCallCount: allToolNames.length,
-          toolsUsed: [...new Set(allToolNames)],
           finishReason: event.finishReason,
+          toolCalls: allToolCalls.map((tc) => ({
+            tool: tc.toolName,
+            input: tc.input,
+          })),
         },
       });
 
-      scoreChatTrace(trace.id, event, 6);
+      scoreChatTrace(trace, event, 6);
 
       await langfuse.flushAsync();
     },

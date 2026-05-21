@@ -5,7 +5,7 @@ import { db } from "../index";
 import { lawChunks } from "./schema";
 
 const VECTOR_THRESHOLD = 0.6;
-const VECTOR_THRESHOLD_HYBRID = 0.5; // BM25가 보완하므로 완화
+const VECTOR_THRESHOLD_HYBRID = 0.4; // BM25가 보완하므로 완화
 const DEFAULT_LIMIT = 5;
 
 export type ChunkType =
