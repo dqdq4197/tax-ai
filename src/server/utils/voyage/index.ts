@@ -13,7 +13,7 @@ const client = new VoyageAIClient({
 export async function getEmbedding(text: string): Promise<number[]> {
   const res = await client.embed({
     input: text,
-    model: "voyage-3",
+    model: "voyage-3.5",
     inputType: "document",
   });
   const embedding = res.data?.[0]?.embedding;
@@ -28,7 +28,7 @@ export async function getEmbedding(text: string): Promise<number[]> {
 export async function getQueryEmbedding(text: string): Promise<number[]> {
   const res = await client.embed({
     input: text,
-    model: "voyage-3",
+    model: "voyage-3.5",
     inputType: "query",
   });
   const embedding = res.data?.[0]?.embedding;
