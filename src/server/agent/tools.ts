@@ -11,23 +11,19 @@ import {
 export const tools = {
   vector_search: tool({
     description:
-      "관련 세법 조항을 검색합니다. 법적 근거를 제시하거나 세법 내용을 확인할 때 사용하세요.",
+      "사용자의 질문과 관련된 세법 조항을 검색합니다." +
+      "비형식적 용어는 반드시 소득세법 공식 용어로 치환하여 검색을 수행하세요.",
     inputSchema: z.object({
-      query: z.string().describe("검색할 세법 관련 질문 또는 키워드"),
-      incomeType: z
-        .enum(["business", "freelance"])
+      query: z
+        .string()
         .describe(
-          "소득 유형 — business: 일반 사업소득, freelance: 인적용역·프리랜서",
+          "구어체·직업명 등 일상 용어를 법령 원문에 실제 등장하는 세법 용어로 변환한 검색어. " +
+            "예: '유튜버' → '인적용역 사업소득', '배달기사' → '운송업 인적용역'",
         ),
     }),
-    execute: async ({ query, incomeType }) => {
+    execute: async ({ query }) => {
       const embedding = await getQueryEmbedding(query);
-      const chunks = await searchLawChunks(
-        embedding,
-        incomeType,
-        undefined,
-        query,
-      );
+      const chunks = await searchLawChunks(embedding, query);
       return chunks.map((c) => ({
         law: c.metadata.source,
         article: c.metadata.article,
