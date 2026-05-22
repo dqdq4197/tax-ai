@@ -1,8 +1,8 @@
 import type { OnFinishEvent, ToolSet } from "ai";
-import type { LangfuseTraceClient } from "langfuse";
+import { langfuse } from ".";
 
 export function scoreChatTrace<T extends ToolSet>(
-  trace: LangfuseTraceClient,
+  traceId: string,
   event: OnFinishEvent<T>,
   stepLimit: number,
 ) {
@@ -25,7 +25,7 @@ export function scoreChatTrace<T extends ToolSet>(
         ? "상담"
         : "도구없음";
 
-  trace.score({ name: "intent", value: intent, dataType: "CATEGORICAL" });
+  langfuse.score({ traceId, name: "intent", value: intent, dataType: "CATEGORICAL" });
 
   // tax_calculator 성공 여부
   const calcErrors = allToolErrors.filter(
@@ -42,7 +42,8 @@ export function scoreChatTrace<T extends ToolSet>(
         : calcErrors > 0
           ? "재시도후성공"
           : "바로성공";
-    trace.score({
+    langfuse.score({
+      traceId,
       name: "calculator_success",
       value: calcValue,
       dataType: "CATEGORICAL",
@@ -57,10 +58,11 @@ export function scoreChatTrace<T extends ToolSet>(
     const isEmpty = searchResults.every(
       (r) => "output" in r && Array.isArray(r.output) && r.output.length === 0,
     );
-    trace.score({
+    langfuse.score({
+      traceId,
       name: "retrieval_result",
-      value: isEmpty ? "실패" : "성공",
-      dataType: "CATEGORICAL",
+      value: isEmpty ? 0 : 1,
+      dataType: "NUMERIC",
     });
   }
 
@@ -77,20 +79,23 @@ export function scoreChatTrace<T extends ToolSet>(
         "found" in result.output &&
         (result.output as { found: boolean }).found === false,
     );
-    trace.score({
+    langfuse.score({
+      traceId,
       name: "law_lookup_result",
-      value: notFound ? "실패" : "성공",
-      dataType: "CATEGORICAL",
+      value: notFound ? 0 : 1,
+      dataType: "NUMERIC",
     });
   }
 
   // max_steps 도달 여부 + 실제 step 수
-  trace.score({
-    name: "max_steps_hit",
-    value: event.steps.length >= stepLimit ? "실패" : "성공",
-    dataType: "CATEGORICAL",
+  langfuse.score({
+    traceId,
+    name: "completed_within_steps",
+    value: event.steps.length < stepLimit ? 1 : 0,
+    dataType: "NUMERIC",
   });
-  trace.score({
+  langfuse.score({
+    traceId,
     name: "step_count",
     value: event.steps.length,
     dataType: "NUMERIC",

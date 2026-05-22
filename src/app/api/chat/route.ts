@@ -7,6 +7,7 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
+import { after } from "next/server";
 import { createConversation } from "@/server/db/conversations/queries";
 import {
   finalizeAssistantMessage,
@@ -19,8 +20,10 @@ import { encryption } from "@/server/utils/encryption/aes256gcm";
 import { langfuse } from "@/server/utils/langfuse";
 import { scoreChatTrace } from "@/server/utils/langfuse/scoring";
 import { getAnonId } from "@/server/utils/session";
+import { langfuseSpanProcessor } from "@/instrumentation";
 
 const MODEL: GoogleGenerativeAIModelId = "gemini-2.5-pro";
+const STEP_LIMIT = 6;
 
 export async function POST(req: Request) {
   const {
@@ -28,17 +31,10 @@ export async function POST(req: Request) {
     conversationId: existingId,
   }: { messages: UIMessage[]; conversationId?: string } = await req.json();
 
-  const anonId = await getAnonId();
-  const conversationId =
-    existingId ?? (await createConversation(anonId ?? "anonymous"));
+  const anonId = (await getAnonId()) ?? "anonymous";
+  const conversationId = existingId ?? (await createConversation(anonId));
   const startedAt = Date.now();
-
-  const trace = langfuse.trace({
-    userId: anonId,
-    name: "chat",
-    sessionId: conversationId,
-    input: { messages },
-  });
+  const traceId = crypto.randomUUID();
 
   // incoming user 메시지 수가 DB보다 많을 때만 저장 — resume/retry 경로의 중복 저장 방지.
   const incomingUserCount = messages.filter(
@@ -58,7 +54,7 @@ export async function POST(req: Request) {
       conversationId,
       role: "user",
       content: encryption.encrypt(content),
-      traceId: trace.id,
+      traceId,
     });
   }
 
@@ -68,7 +64,7 @@ export async function POST(req: Request) {
     role: "assistant",
     content: encryption.encrypt(""),
     status: "generating",
-    traceId: trace.id,
+    traceId,
   });
 
   const result = streamText({
@@ -76,7 +72,15 @@ export async function POST(req: Request) {
     system: buildSystemPrompt(),
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: stepCountIs(6),
+    stopWhen: stepCountIs(STEP_LIMIT),
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        langfuseTraceId: traceId,
+        langfuseUserId: anonId,
+        langfuseSessionId: conversationId,
+      },
+    },
     onFinish: async (event) => {
       const allToolCalls = event.steps.flatMap((s) => s.toolCalls);
 
@@ -91,25 +95,14 @@ export async function POST(req: Request) {
         finishReason: event.finishReason,
       });
 
-      trace.update({
-        output: { text: event.text },
-        metadata: {
-          model: MODEL,
-          durationMs: Date.now() - startedAt,
-          inputTokens: event.totalUsage.inputTokens,
-          outputTokens: event.totalUsage.outputTokens,
-          stepCount: event.steps.length,
-          finishReason: event.finishReason,
-          toolCalls: allToolCalls.map((tc) => ({
-            tool: tc.toolName,
-            input: tc.input,
-          })),
-        },
+      scoreChatTrace(traceId, event, STEP_LIMIT);
+
+      after(async () => {
+        await Promise.all([
+          langfuse.flushAsync(),
+          langfuseSpanProcessor.forceFlush(),
+        ]);
       });
-
-      scoreChatTrace(trace, event, 6);
-
-      await langfuse.flushAsync();
     },
   });
 
