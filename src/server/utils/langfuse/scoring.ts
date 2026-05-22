@@ -11,7 +11,7 @@ export function scoreChatTrace<T extends ToolSet>(
   );
   const allToolResults = event.steps.flatMap((s) => s.toolResults);
   const allToolErrors = event.steps
-    .flatMap((s) => s.content)
+    .flatMap((s) => s.content ?? [])
     .filter((c) => c.type === "tool-error");
 
   const toolsUsed = new Set(allToolNames);
@@ -42,7 +42,6 @@ export function scoreChatTrace<T extends ToolSet>(
         : calcErrors > 0
           ? "재시도후성공"
           : "바로성공";
-
     trace.score({
       name: "calculator_success",
       value: calcValue,
@@ -55,7 +54,7 @@ export function scoreChatTrace<T extends ToolSet>(
     (r) => r.toolName === "vector_search",
   );
   if (searchResults.length > 0) {
-    const isEmpty = searchResults.some(
+    const isEmpty = searchResults.every(
       (r) => "output" in r && Array.isArray(r.output) && r.output.length === 0,
     );
     trace.score({

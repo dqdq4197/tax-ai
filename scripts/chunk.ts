@@ -37,13 +37,6 @@ export interface ParsedLaw {
 
 // ─── 출력 타입 ────────────────────────────────────────────────────────────────
 
-export type ChunkType =
-  | "definition"
-  | "rule"
-  | "exception"
-  | "procedure"
-  | "mixed";
-
 export interface ChunkMetadata {
   source: string;
   article: string;
@@ -51,7 +44,6 @@ export interface ChunkMetadata {
   lawVersion: string;
   incomeTypes: string[];
   paragraph: string;
-  chunk_type: ChunkType;
   parent_article: string;
   references: string[];
   keywords: string[];
@@ -79,23 +71,6 @@ const PARA_MARKS = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳
 
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 2);
-}
-
-// ─── 청크 타입 분류 ───────────────────────────────────────────────────────────
-
-function classifyChunkType(text: string): ChunkType {
-  const isDef = /이란\s|이라\s함은|이라\s한다/.test(text);
-  const isExc = /다만[,\s]|에도\s불구하고|제외한다|제외하고|아니한다/.test(
-    text,
-  );
-  const isProc = /신청|제출|통보|통지|절차|기한\s내|기간\s내/.test(text);
-
-  const n = [isDef, isExc, isProc].filter(Boolean).length;
-  if (n > 1) return "mixed";
-  if (isDef) return "definition";
-  if (isExc) return "exception";
-  if (isProc) return "procedure";
-  return "rule";
 }
 
 // ─── 레퍼런스 추출 ────────────────────────────────────────────────────────────
@@ -279,7 +254,6 @@ export function chunkParsedLaw(
         lawVersion,
         incomeTypes,
         paragraph,
-        chunk_type: classifyChunkType(text),
         parent_article: article.article,
         references: extractReferences(text, selfRef),
         keywords: extractKeywords(text, articleTitle),

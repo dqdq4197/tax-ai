@@ -8,18 +8,10 @@ const VECTOR_THRESHOLD = 0.6;
 const VECTOR_THRESHOLD_HYBRID = 0.4; // BM25가 보완하므로 완화
 const DEFAULT_LIMIT = 5;
 
-export type ChunkType =
-  | "definition"
-  | "rule"
-  | "exception"
-  | "procedure"
-  | "mixed";
-
 export async function searchLawChunks(
   embedding: number[],
   incomeType: string,
   limit = DEFAULT_LIMIT,
-  chunkType?: ChunkType,
   queryText?: string,
 ) {
   const vec = JSON.stringify(embedding);
@@ -49,9 +41,6 @@ export async function searchLawChunks(
         candidateFilter,
         sql`${lawChunks.metadata}->'incomeTypes' = '[]'::jsonb
             OR ${lawChunks.metadata}->'incomeTypes' ? ${incomeType}`,
-        chunkType
-          ? sql`${lawChunks.metadata}->>'chunk_type' = ${chunkType}`
-          : undefined,
       ),
     )
     .orderBy(

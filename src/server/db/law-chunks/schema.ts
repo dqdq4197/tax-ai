@@ -33,7 +33,6 @@ export const lawChunks = pgTable(
         lawVersion: string; // 법령 시행일 (YYYY-MM-DD), 법제처 기준
         incomeTypes: string[];
         paragraph: string;
-        chunk_type: "definition" | "rule" | "exception" | "procedure" | "mixed";
         parent_article: string;
         references: string[];
         keywords: string[];

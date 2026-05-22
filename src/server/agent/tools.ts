@@ -6,7 +6,6 @@ import { getQueryEmbedding } from "../utils/voyage";
 import {
   getLawChunksByArticle,
   searchLawChunks,
-  type ChunkType,
 } from "../db/law-chunks/queries";
 
 export const tools = {
@@ -20,20 +19,13 @@ export const tools = {
         .describe(
           "소득 유형 — business: 일반 사업소득, freelance: 인적용역·프리랜서",
         ),
-      chunkType: z
-        .enum(["definition", "rule", "exception", "procedure", "mixed"])
-        .optional()
-        .describe(
-          "청크 타입 필터 — 용어 정의 질문: definition, 신고·서식 절차: procedure, 예외·단서 규정: exception. 일반 검색은 생략",
-        ),
     }),
-    execute: async ({ query, incomeType, chunkType }) => {
+    execute: async ({ query, incomeType }) => {
       const embedding = await getQueryEmbedding(query);
       const chunks = await searchLawChunks(
         embedding,
         incomeType,
         undefined,
-        chunkType as ChunkType | undefined,
         query,
       );
       return chunks.map((c) => ({

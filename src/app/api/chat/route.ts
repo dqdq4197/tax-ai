@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   const startedAt = Date.now();
 
   const trace = langfuse.trace({
+    userId: anonId,
     name: "chat",
     sessionId: conversationId,
     input: { messages },
