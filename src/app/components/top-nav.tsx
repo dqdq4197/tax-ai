@@ -40,7 +40,7 @@ export default function TopNav() {
   })();
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border/60 px-4">
+    <header className="sticky top-0 flex h-12 shrink-0 items-center gap-2 border-b border-border/60 bg-background px-4">
       {isMobile && (
         <>
           <SidebarTrigger className="-ml-1" />
