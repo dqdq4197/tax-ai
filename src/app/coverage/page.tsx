@@ -69,27 +69,29 @@ const roadmap = [
 
 export default function CoveragePage() {
   return (
-    <div className="px-6 py-14 pb-20 overflow-y-auto h-full">
-      <div className="max-w-230 mx-auto">
-        <h1 className="text-[28px] font-semibold leading-snug tracking-tight mb-2">
+    <div className="h-full overflow-y-auto px-6 py-14 pb-20">
+      <div className="mx-auto max-w-230">
+        <h1 className="mb-2 text-[28px] leading-snug font-semibold tracking-tight">
           상담 범위
         </h1>
-        <p className="text-[15px] text-muted-foreground leading-relaxed mb-7 max-w-[60ch]">
+        <p className="mb-7 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">
           tax·ai는 현재{" "}
-          <strong className="text-foreground font-medium">
+          <strong className="font-medium text-foreground">
             사업소득(프리랜서 포함)
           </strong>
           의 종합소득세 상담만 지원해요. 정확한 답변을 위해 범위를 좁히고 있고,
           다른 소득 유형은 단계적으로 확장 중이에요.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7">
+        <div className="mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* 현재 지원 */}
-          <Card className="border border-emerald-400 bg-linear-to-br from-card to-emerald-400/5 gap-0 py-0">
+          <Card className="gap-0 border border-emerald-400 bg-linear-to-br from-card to-emerald-400/5 py-0">
             <CardHeader className="px-5 pt-5 pb-3">
               <div className="flex items-center gap-2.5">
-                <h3 className="typo-h4 font-semibold leading-snug">현재 지원</h3>
-                <span className="typo-bold11 px-2 py-1 rounded-full leading-none tracking-wide bg-emerald-400 text-emerald-950">
+                <h3 className="typo-h4 leading-snug font-semibold">
+                  현재 지원
+                </h3>
+                <span className="rounded-full bg-emerald-400 px-2 py-1 typo-bold11 leading-none tracking-wide text-emerald-950">
                   사업소득
                 </span>
               </div>
@@ -109,20 +111,23 @@ export default function CoveragePage() {
                   </li>
                 ))}
               </ul>
-              <p className="typo-caption4 text-muted-foreground/70 mt-3 leading-relaxed">
-                2023–2025년 세법 기준. 업종코드별 경비율은 국세청 고시를 직접 반영해요.
+              <p className="mt-3 typo-caption4 leading-relaxed text-muted-foreground/70">
+                2023–2025년 세법 기준. 업종코드별 경비율은 국세청 고시를 직접
+                반영해요.
               </p>
             </CardContent>
           </Card>
 
           {/* 지원 예정 */}
-          <Card className="border gap-0 py-0">
+          <Card className="gap-0 border py-0">
             <CardHeader className="px-5 pt-5 pb-3">
               <div className="flex items-center gap-2.5">
-                <h3 className="typo-h4 font-semibold leading-snug">지원 예정</h3>
+                <h3 className="typo-h4 leading-snug font-semibold">
+                  세액 계산 예정
+                </h3>
                 <Badge
                   variant="secondary"
-                  className="typo-bold11 tracking-wide rounded-full px-2 py-1"
+                  className="rounded-full px-2 py-1 typo-bold11 tracking-wide"
                 >
                   로드맵
                 </Badge>
@@ -138,13 +143,16 @@ export default function CoveragePage() {
                       i > 0 && "border-t border-border/60",
                     )}
                   >
-                    <X size={14} className="shrink-0 text-muted-foreground/40" />
+                    <X
+                      size={14}
+                      className="shrink-0 text-muted-foreground/40"
+                    />
                     {item}
                   </li>
                 ))}
               </ul>
-              <p className="typo-caption4 text-muted-foreground/70 mt-3 leading-relaxed">
-                해당 소득이 있다면 우선 사업소득 범위 내에서 안내드리고, 나머지는 세무사 상담을 권해드려요.
+              <p className="mt-3 typo-caption4 leading-relaxed text-muted-foreground/70">
+                법령 문의는 이미 가능해요. 세액 계산만 단계적으로 추가 중이에요.
               </p>
             </CardContent>
           </Card>
@@ -152,17 +160,17 @@ export default function CoveragePage() {
 
         {/* Roadmap */}
         <div className="mt-5">
-          <h2 className="typo-h2 font-semibold leading-snug tracking-tight mb-3.5">
+          <h2 className="mb-3.5 typo-h2 leading-snug font-semibold tracking-tight">
             지원 확장 로드맵
           </h2>
           <ol>
             {roadmap.map((item, i) => (
               <li key={item.step}>
                 {i > 0 && <Separator className="opacity-60" />}
-                <div className="grid items-center gap-3.5 py-3.5 grid-cols-[28px_1fr_auto]">
+                <div className="grid grid-cols-[28px_1fr_auto] items-center gap-3.5 py-3.5">
                   <div
                     className={cn(
-                      "w-7 h-7 rounded-full flex items-center justify-center typo-bold11 font-mono shrink-0",
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono typo-bold11",
                       item.isCurrent
                         ? "bg-sidebar-primary text-white"
                         : "bg-muted text-muted-foreground",
@@ -172,14 +180,16 @@ export default function CoveragePage() {
                   </div>
                   <div>
                     <p className="typo-body2 leading-snug">{item.label}</p>
-                    <p className="typo-caption4 text-muted-foreground mt-0.5 leading-snug">
+                    <p className="mt-0.5 typo-caption4 leading-snug text-muted-foreground">
                       {item.desc}
                     </p>
                   </div>
                   <span
                     className={cn(
-                      "typo-body5 font-mono whitespace-nowrap",
-                      item.isCurrent ? "text-sidebar-primary" : "text-muted-foreground",
+                      "font-mono typo-body5 whitespace-nowrap",
+                      item.isCurrent
+                        ? "text-sidebar-primary"
+                        : "text-muted-foreground",
                     )}
                   >
                     {item.when}
