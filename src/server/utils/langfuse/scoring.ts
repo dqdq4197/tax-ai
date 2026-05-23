@@ -6,17 +6,11 @@ export function scoreChatTrace<T extends ToolSet>(
   event: OnFinishEvent<T>,
   stepLimit: number,
 ) {
-  const allToolNames = event.steps.flatMap((s) =>
-    s.toolCalls.map((t) => t.toolName),
-  );
+  const allToolCalls = event.steps.flatMap((s) => s.toolCalls);
   const allToolResults = event.steps.flatMap((s) => s.toolResults);
-  const allToolErrors = event.steps
-    .flatMap((s) => s.content ?? [])
-    .filter((c) => c.type === "tool-error");
+  const toolsUsed = new Set(allToolCalls.map((tc) => tc.toolName));
 
-  const toolsUsed = new Set(allToolNames);
-
-  // intent
+  // 주요 목적 분류 (우선순위: 계산 > 조문조회 > 상담 > 도구없음)
   const intent = toolsUsed.has("tax_calculator")
     ? "계산"
     : toolsUsed.has("law_article_lookup")
@@ -25,48 +19,60 @@ export function scoreChatTrace<T extends ToolSet>(
         ? "상담"
         : "도구없음";
 
-  langfuse.score({ traceId, name: "intent", value: intent, dataType: "CATEGORICAL" });
+  langfuse.score({
+    traceId,
+    name: "intent",
+    value: intent,
+    dataType: "CATEGORICAL",
+    comment:
+      "호출된 tool 기준으로 분류. 도구없음은 LLM이 tool을 사용하지 않은 비정상 케이스",
+  });
 
-  // tax_calculator 성공 여부
-  const calcErrors = allToolErrors.filter(
-    (c) => "toolName" in c && c.toolName === "tax_calculator",
+  // tax_calculator: 호출 수 대비 결과 수로 오류 횟수 산출
+  const calcCalls = allToolCalls.filter(
+    (tc) => tc.toolName === "tax_calculator",
   ).length;
   const calcSuccess = allToolResults.filter(
     (r) => r.toolName === "tax_calculator",
   ).length;
+  const calcErrors = calcCalls - calcSuccess;
 
-  if (calcSuccess + calcErrors > 0) {
-    const calcValue =
-      calcErrors > 0 && calcSuccess === 0
-        ? "실패"
-        : calcErrors > 0
-          ? "재시도후성공"
-          : "바로성공";
+  if (calcCalls > 0) {
     langfuse.score({
       traceId,
       name: "calculator_success",
-      value: calcValue,
+      value:
+        calcErrors > 0 && calcSuccess === 0
+          ? "실패"
+          : calcErrors > 0
+            ? "재시도후성공"
+            : "바로성공",
       dataType: "CATEGORICAL",
+      comment:
+        "tool 호출 수 대비 결과 수로 판단. 재시도후성공은 검증 실패 후 LLM이 파라미터를 수정한 케이스",
     });
   }
 
-  // vector_search 검색 결과 여부
   const searchResults = allToolResults.filter(
     (r) => r.toolName === "vector_search",
   );
   if (searchResults.length > 0) {
-    const isEmpty = searchResults.every(
+    const emptyCount = searchResults.filter(
       (r) => "output" in r && Array.isArray(r.output) && r.output.length === 0,
-    );
+    ).length;
+    const retrievalScore =
+      emptyCount === 0 ? 1 : emptyCount === searchResults.length ? 0 : 0.5;
     langfuse.score({
       traceId,
       name: "retrieval_result",
-      value: isEmpty ? 0 : 1,
+      value: retrievalScore,
       dataType: "NUMERIC",
+      comment:
+        "1 = 전부 성공, 0.5 = 일부 빈 결과, 0 = 전부 빈 결과(법령 미인덱싱 또는 쿼리 불일치)",
     });
   }
 
-  // law_article_lookup 결과 여부
+  // law_article_lookup: 조항 원문 반환 성공 여부
   const lookupResults = allToolResults.filter(
     (r) => r.toolName === "law_article_lookup",
   );
@@ -84,20 +90,34 @@ export function scoreChatTrace<T extends ToolSet>(
       name: "law_lookup_result",
       value: notFound ? 0 : 1,
       dataType: "NUMERIC",
+      comment: "0 = 조항 미발견, 1 = 원문 반환 성공",
     });
   }
 
-  // max_steps 도달 여부 + 실제 step 수
   langfuse.score({
     traceId,
     name: "completed_within_steps",
     value: event.steps.length < stepLimit ? 1 : 0,
     dataType: "NUMERIC",
+    comment: `1 = stepLimit(${stepLimit}) 내 완료, 0 = 한도 초과`,
   });
+
   langfuse.score({
     traceId,
     name: "step_count",
     value: event.steps.length,
     dataType: "NUMERIC",
+    comment: "실제 step 수. 평균 추이로 응답 복잡도 모니터링",
   });
+
+  // stop / tool-calls 이외는 비정상 종료 — 콘텐츠 필터·오류 등 감지
+  if (event.finishReason !== "stop" && event.finishReason !== "tool-calls") {
+    langfuse.score({
+      traceId,
+      name: "finish_reason",
+      value: event.finishReason,
+      dataType: "CATEGORICAL",
+      comment: "비정상 종료 감지용. stop/tool-calls 정상 케이스는 기록 생략",
+    });
+  }
 }
