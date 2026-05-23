@@ -109,18 +109,6 @@
 
 ⸻
 
-7. Chunk 타입 분류
-
-각 chunk는 다음 중 하나로 분류:
-
-- “definition” (정의)
-- “rule” (일반 규정)
-- “exception” (예외 규정)
-- “procedure” (절차)
-- “mixed” (복합)
-
-⸻
-
 8. 검색 최적화 메타데이터 생성
 
 각 chunk에는 반드시 다음을 포함:
@@ -184,7 +172,6 @@
       “law”: “소득세법”,
       “article”: “제5조”,
       “paragraph”: “①”,
-      “chunk_type”: “definition | rule | exception |      procedure | mixed”,
       “parent_article”: “제5조”,
       “references”: [“제6조”],
       “keywords”: [“소득”, “정의”],

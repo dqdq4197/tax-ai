@@ -1,74 +1,81 @@
-# tax-ai (종합소득세 AI 상담 챗봇)
+# tax-ai — 소득세 AI 상담 챗봇
 
-사업소득·프리랜서 소득자가 대화로 정보를 입력하면, 세법 조항을 검색하고 세액을 계산해 스트리밍으로 응답합니다.
-
----
+소득세법 원문 기반 AI 세금 상담 챗봇. 임의 해석 없이 법령 조항을 직접 검색·인용해 근거 있는 답변을 제공하며, 사업소득·프리랜서는 세액까지 계산합니다.
 
 ## 주요 기능
 
-- **대화형 세금 상담** — 자연어로 소득·비용 정보를 입력하면 단계적으로 세액 산출
-- **세법 조항 검색** — vector embedding으로 소득세법·시행령 원문을 의미 기반 검색, 법 조항 인용
-- **결정론적 세액 계산** — LLM이 아닌 서버 함수(`tax_calculator`)로 계산, 내부 검증 후 결과 반환
-- **경비율 자동 선택** — 업종코드와 수입 금액에 따라 단순/기준경비율 자동 선택
-- **대화 이력 저장** — 모든 메시지 AES-256-GCM 암호화 후 DB 저장, 이전 상담 이어보기 가능
+| 기능               | 설명                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| 대화형 세금 상담   | 자연어로 소득·비용 정보를 입력하면 단계적으로 세액 산출                            |
+| 세법 조항 검색     | 소득세법·시행령·시행규칙 원문을 의미 기반(vector) 검색 및 조항 번호 직접 조회      |
+| 세액 계산 범위     | 법령 질의응답은 소득세법 전반 가능, 세액 계산은 사업소득·프리랜서(인적용역)만 지원 |
+| 결정론적 세액 계산 | LLM이 아닌 서버 함수(`tax_calculator`)로 계산, 내부 검증 후 결과 반환              |
+| 경비율 자동 선택   | 업종코드와 수입 금액에 따라 단순/기준경비율 자동 선택                              |
+| 대화 이력 저장     | 모든 메시지 AES-256-GCM 암호화 후 DB 저장, 이전 상담 이어보기 가능                 |
 
----
+## RAG 파이프라인
 
-## 기술 스택
+![RAG flow](./public/rag-flow.png)
 
-| 영역          | 기술                                    |
-| ------------- | --------------------------------------- |
-| Framework     | Next.js 16 (App Router)                 |
-| Language      | TypeScript                              |
-| Styling       | Tailwind CSS v4 + shadcn/ui             |
-| AI SDK        | Vercel AI SDK (`streamText`, `useChat`) |
-| LLM           | Google Gemini 2.5 Flash                 |
-| Embedding     | Voyage AI (voyage-3, 1024-dim)          |
-| ORM           | Drizzle ORM                             |
-| DB            | PostgreSQL + pgvector (Neon)            |
-| Observability | Langfuse                                |
-| Encryption    | Node.js crypto (AES-256-GCM)            |
-| Deploy        | Vercel + Neon                           |
+### Chunking 전략
 
----
-
-## 프로젝트 구조
+기본 단위는 **조(Article)**. 법령 조문 하나가 독립적인 법적 의미를 가지므로 조 단위를 청킹의 기준으로 삼습니다.
 
 ```
-src/
-├── app/
-│   ├── page.tsx                         # 대화 목록 (홈)
-│   ├── chat/[conversationId]/           # 채팅 UI
-│   └── api/
-│       ├── chat/route.ts                # 핵심 엔드포인트 — streamText + tool 실행
-│       └── conversations/[id]/          # 대화 조회·수정 API
-└── server/
-    ├── agent/
-    │   ├── tools.ts                     # vector_search, law_article_lookup, tax_calculator 정의
-    │   ├── prompts.ts                   # 시스템 프롬프트
-    │   └── calculators/
-    │       └── business/                # 사업소득 세액 계산 로직 (경비율, 세율 구간)
-    ├── db/                              # Drizzle 스키마 + 쿼리 (conversations, messages, law-chunks)
-    └── utils/
-        ├── encryption/aes256gcm.ts
-        ├── voyage/                      # 임베딩 클라이언트
-        └── langfuse/                    # 옵저버빌리티 클라이언트
+조(Article) 토큰 추정
+    │
+    ├── ≤ 900 tokens ──→ 단일 청크
+    │
+    └── > 900 tokens ──→ 항(①②③...) 단위 분할
+                          │
+                          ├── 각 청크 = header + 이전 항 + 현재 항  (overlap)
+                          │
+                          └── > 1200 tokens ──→ Fixed-size chunking (줄 단위 누적, 최후 수단)
 ```
 
----
+### Retrieval 파이프라인
+
+```
+사용자 쿼리
+    │
+    ▼
+[쿼리 임베딩]  Voyage AI voyage-3.5 → 1024-dim 벡터
+    │
+    ▼
+[하이브리드 검색]  PostgreSQL + pgvector (단일 SQL)
+    ├── Vector : cosine similarity × 0.7
+    └── BM25   : ts_rank_cd        × 0.3
+    │
+    │  필터 조건
+    ├── vector similarity > 0.3  OR  BM25 키워드 매칭
+    └── hybrid score > 0.05
+    │
+    ▼
+[상위 5개 반환]  hybrid score DESC → LLM 컨텍스트로 전달
+```
+
+**가중치 근거** — 세법 쿼리는 "기준경비율", "인적용역" 같은 도메인 고유 용어 매칭이 중요해 BM25 비중을 30%로 유지. 의미 검색(Vector) 70%로 유사 표현 커버.
 
 ## 대화 흐름
 
 ```
-1. 첫 메시지 전송 → conversation 자동 생성 → URL /chat/[id]로 교체
-2. POST /api/chat → streamText(LLM + tools)
-     ├── vector_search      : 세법 DB에서 관련 조항 검색
-     ├── law_article_lookup : 특정 조문 조회
-     └── tax_calculator     : 세액 계산 (서버 함수 실행 → 검증 → 결과 반환)
-3. 응답 스트리밍 → 메시지 암호화 저장
-```
+유저 (브라우저)
+  │  useChat hook (Vercel AI SDK)
+  ▼
+app/chat/[sessionId]
+  │  POST /api/chat
+  ▼
+Route Handler: streamText()
+  ├── tool: vector_search      ──▶ pgvector (세법 검색)
+  ├── tool: law_article_lookup ──▶ 특정 조문 조회
+  └── tool: tax_calculator     ──▶ 결정론적 계산 함수
+  │         │
+  │         └── verifyResult() ──▶ 수식 검증 (실패 시 재시도)
+  ▼
+스트리밍 응답 ──▶ 유저 화면에 실시간 표시
 
----
+(비동기) 메시지 + tool 이력 DB 암호화 저장
+```
 
 ## 아키텍처 핵심 원칙
 
@@ -77,12 +84,6 @@ src/
 - **모든 메시지는 암호화된다** — 민감 세무 정보 보호 (AES-256-GCM)
 - **세법 데이터는 공식 출처만** — law.go.kr / nts.go.kr 원문만 허용, 비공식 출처 금지
 
----
-
 ## 참고 문서
 
-- [아키텍처](docs/architecture.md)
-- [에이전트 설계](docs/agent-workflow.md)
-- [DB 스키마](docs/database.md)
-- [API 설계](docs/api.md)
-- [RAG 파이프라인](docs/rag-pipeline.md)
+- [DB seed 가이드](docs/db-seed.md)
