@@ -43,8 +43,8 @@
     │
     ▼
 [하이브리드 검색]  PostgreSQL + pgvector (단일 SQL)
-    ├── Vector : cosine similarity × 0.7
-    └── BM25   : ts_rank_cd        × 0.3
+    ├── Vector : cosine similarity × 0.8
+    └── BM25   : ts_rank_cd 정규화 × 0.2
     │
     │  필터 조건
     ├── vector similarity > 0.3  OR  BM25 키워드 매칭
@@ -54,7 +54,7 @@
 [상위 5개 반환]  hybrid score DESC → LLM 컨텍스트로 전달
 ```
 
-**가중치 근거** — 세법 쿼리는 "기준경비율", "인적용역" 같은 도메인 고유 용어 매칭이 중요해 BM25 비중을 30%로 유지. 의미 검색(Vector) 70%로 유사 표현 커버.
+**가중치 근거** — 사용자는 구어체로 입력하고 LLM이 법령 용어로 변환 후 검색하므로, 의미 기반 Vector가 주력(80%). BM25는 변환된 용어가 정확히 일치하는 경우를 보조하는 역할(20%)
 
 ## 대화 흐름
 

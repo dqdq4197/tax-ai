@@ -4,7 +4,7 @@ import { parseArticleRef } from "@/utils/law-sources";
 import { db } from "../index";
 import { lawChunks } from "./schema";
 
-const VECTOR_THRESHOLD_HYBRID = 0.3;
+const VECTOR_SIMILARITY_THRESHOLD = 0.3;
 const MIN_HYBRID_SCORE = 0.05;
 const DEFAULT_LIMIT = 5;
 
@@ -15,9 +15,10 @@ export async function searchLawChunks(
 ) {
   const vec = JSON.stringify(embedding);
   const bm25OrQuery = queryText.trim().split(/\s+/).join(" | ");
+  const bm25Score = sql<number>`ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText}))`;
   const hybridScore = sql<number>`
     (1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
-    + ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText})) * 0.3`;
+    + (${bm25Score} / (${bm25Score} + 0.1)) * 0.2`;
 
   return db
     .select({
@@ -29,19 +30,15 @@ export async function searchLawChunks(
     .where(
       and(
         or(
-          sql`1 - (${lawChunks.embedding} <=> ${vec}::vector) > ${VECTOR_THRESHOLD_HYBRID}`,
+          // 벡터 유사도 필터: 벡터 유사도가 0.3 이상인 청크를 후보로 올림
+          sql`1 - (${lawChunks.embedding} <=> ${vec}::vector) > ${VECTOR_SIMILARITY_THRESHOLD}`,
           // BM25 후보 필터: 단어 중 하나라도 포함된 청크를 후보로 올림
           sql`${lawChunks.contentTsv} @@ to_tsquery('simple', ${bm25OrQuery})`,
         ),
-        sql`(1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
-            + ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText})) * 0.3
-            > ${MIN_HYBRID_SCORE}`,
+        sql`${hybridScore} > ${MIN_HYBRID_SCORE}`,
       ),
     )
-    .orderBy(
-      sql`(1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
-          + ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText})) * 0.3 DESC`,
-    )
+    .orderBy(sql`${hybridScore} DESC`)
     .limit(limit);
 }
 
