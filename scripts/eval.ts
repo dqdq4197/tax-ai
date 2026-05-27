@@ -184,6 +184,8 @@ function printReport(
 ): void {
   const total = results.length;
   let passedTotal = 0;
+  let toolTotal = 0;
+  let toolPassed = 0;
   let citationTotal = 0;
   let citationPassed = 0;
   let contentTotal = 0;
@@ -200,6 +202,9 @@ function printReport(
     byCategory[cat].total++;
     if (r.passed) byCategory[cat].passed++;
 
+    toolTotal++;
+    if (r.scores.tool_selection === 1) toolPassed++;
+
     if (r.scores.citation_accuracy !== null) {
       citationTotal++;
       if (r.scores.citation_accuracy === 1) citationPassed++;
@@ -214,6 +219,7 @@ function printReport(
   }
 
   const accuracy = pct(passedTotal, total);
+  const toolAcc = pct(toolPassed, toolTotal);
   const citationAcc =
     citationTotal > 0 ? pct(citationPassed, citationTotal) : "n/a";
   const contentAcc =
@@ -221,6 +227,7 @@ function printReport(
 
   console.log(`\n${"═".repeat(65)}`);
   console.log(`전체 정확도 : ${passedTotal}/${total} (${accuracy})`);
+  console.log(`도구 선택   : ${toolPassed}/${toolTotal} (${toolAcc})`);
   console.log(
     `인용 정확도 : ${citationPassed}/${citationTotal} (${citationAcc})`,
   );
