@@ -17,7 +17,7 @@ export async function searchLawChunks(
   const bm25OrQuery = queryText.trim().split(/\s+/).join(" | ");
   const bm25Score = sql<number>`ts_rank_cd(${lawChunks.contentTsv}, websearch_to_tsquery('simple', ${queryText}))`;
   const hybridScore = sql<number>`
-    (1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.7
+    (1 - (${lawChunks.embedding} <=> ${vec}::vector)) * 0.8
     + (${bm25Score} / (${bm25Score} + 0.1)) * 0.2`;
 
   return db
